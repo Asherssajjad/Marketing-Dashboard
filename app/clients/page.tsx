@@ -1,5 +1,5 @@
 import { Topbar } from "@/components/Topbar";
-import { Eye, Edit2, TrendingUp, DollarSign, ClipboardList, Plus, MoreHorizontal, Search, Filter, ArrowUpRight, Globe, Zap } from "lucide-react";
+import { Eye, Edit2, TrendingUp, DollarSign, ClipboardList, Plus, MoreHorizontal, Search, Filter, ArrowUpRight, Globe, Zap, Users } from "lucide-react";
 import { getClients } from "@/app/actions/clients";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
