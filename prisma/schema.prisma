@@ -53,7 +53,7 @@ model Package {
   posts_pm    Int      @default(0)
   has_ads     Boolean  @default(false)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
   
   client      Client   @relation(fields: [clientId], references: [id])
   monthlyPlans MonthlyPlan[]
@@ -66,7 +66,7 @@ model MonthlyPlan {
   year        Int
   status      String   @default("PLANNED")
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
   
   package     Package  @relation(fields: [packageId], references: [id])
   contentItems ContentItem[]
@@ -80,7 +80,7 @@ model ContentItem {
   assignedTo  String?
   notes       String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
   
   plan        MonthlyPlan @relation(fields: [planId], references: [id])
 }
@@ -94,7 +94,7 @@ model Project {
   milestones  Json?    // Array of objects
   dueDate     DateTime?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
   
   client      Client   @relation(fields: [clientId], references: [id])
   tasks       Task[]   @relation("ProjectTasks")
@@ -108,7 +108,7 @@ model Task {
   dueDate     DateTime?
   status      String   @default("TODO") // TODO, IN_PROGRESS, REVIEW, DONE
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
   
   // Can be linked to client or project
   clientId    String?
@@ -153,7 +153,7 @@ model Payment {
   status      String   @default("PENDING") // PENDING, PAID, OVERDUE
   paidOn      DateTime?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
   
   client      Client   @relation(fields: [clientId], references: [id])
   invoices    Invoice[]
