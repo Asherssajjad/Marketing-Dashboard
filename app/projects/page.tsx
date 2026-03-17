@@ -16,7 +16,7 @@ export default async function ProjectsPage() {
   ];
 
   const getProjectsByStatus = (status: string) => {
-    return projects.filter(p => p.status === status);
+    return projects.filter((p: any) => p.status === status);
   };
 
   return (
@@ -50,7 +50,7 @@ export default async function ProjectsPage() {
           const colProjects = getProjectsByStatus(col.code);
           return (
             <KanbanColumn key={col.code} title={col.title} count={colProjects.length} borderColor={col.color}>
-              {colProjects.map((p) => (
+              {colProjects.map((p: any) => (
                 <Link href={`/projects/${p.id}`} key={p.id} className="block group">
                   <ProjectCard 
                     type={p.type || "WEB_APP"}

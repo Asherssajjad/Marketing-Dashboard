@@ -69,7 +69,7 @@ export async function getClientDetail(id: string) {
         include: { comments: true }
       },
       payments: {
-        include: { invoice: true }
+        include: { invoices: true }
       }
     }
   });
