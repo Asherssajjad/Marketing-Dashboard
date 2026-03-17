@@ -1,7 +1,10 @@
 import { Topbar } from "@/components/Topbar";
 import { MoreVertical, Plus } from "lucide-react";
+import { getContentTrackers } from "@/app/actions/content";
 
-export default function ContentEnginePage() {
+export default async function ContentEnginePage() {
+  const clients = await getContentTrackers();
+
   return (
     <>
       <Topbar title="Content" breadcrumb="AXION" />
@@ -12,64 +15,37 @@ export default function ContentEnginePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* Active Clients Content Cards */}
-            <ContentCard 
-              name="TechNova Solutions" 
-              activeAds={6}
-              reelsProgress={10} reelsTotal={12}
-              postsProgress={18} postsTotal={20}
-              logoColor="bg-teal-600"
-              initial="TN"
-              updated="Updated 2h ago"
-              avatars={['JD', 'AS']}
-            />
+            {clients.map(client => {
+              const activePackage = client.packages[0];
+              const currentPlan = activePackage?.monthlyPlans[0];
+              
+              const reelsPublished = currentPlan?.contentItems.filter(i => i.type === "REEL" && i.status === "PUBLISHED").length || 0;
+              const reelsTotal = activePackage?.reels_pm || 0;
+              
+              const postsPublished = currentPlan?.contentItems.filter(i => i.type === "POST" && i.status === "PUBLISHED").length || 0;
+              const postsTotal = activePackage?.posts_pm || 0;
+
+              // Generate consistent colors based on name
+              const colors = ["bg-teal-600", "bg-emerald-500", "bg-sky-500", "bg-orange-600", "bg-rose-400"];
+              const colorIdx = client.name.length % colors.length;
+
+              return (
+                <ContentCard 
+                  key={client.id}
+                  name={client.name} 
+                  activeAds={activePackage?.has_ads ? 1 : 0}
+                  reelsProgress={reelsPublished} 
+                  reelsTotal={reelsTotal}
+                  postsProgress={postsPublished} 
+                  postsTotal={postsTotal}
+                  logoColor={colors[colorIdx]}
+                  initial={client.name.charAt(0)}
+                  updated={currentPlan ? `Updated ${new Date(currentPlan.month).toDateString()}` : "No active plan"}
+                  avatars={[]}
+                />
+              )
+            })}
             
-            <ContentCard 
-              name="GreenLeaf Organic" 
-              activeAds={3}
-              reelsProgress={6} reelsTotal={12}
-              postsProgress={12} postsTotal={20}
-              logoColor="bg-emerald-500"
-              initial="GL"
-              updated="Updated 5h ago"
-              avatars={['ML']}
-              warning
-            />
-
-            <ContentCard 
-              name="BlueHorizon Ventures" 
-              activeAds={0}
-              reelsProgress={2} reelsTotal={12}
-              postsProgress={5} postsTotal={20}
-              logoColor="bg-sky-500"
-              initial="BH"
-              updated="Updated 10m ago"
-              avatars={['RT', 'KB', 'EM']}
-              danger
-            />
-
-            <ContentCard 
-              name="Spark Dynamics" 
-              activeAds={12}
-              reelsProgress={12} reelsTotal={12}
-              postsProgress={19} postsTotal={20}
-              logoColor="bg-orange-600"
-              initial="SD"
-              updated="Updated 1d ago"
-              avatars={['PH']}
-            />
-
-            <ContentCard 
-              name="Luxe Aesthetics" 
-              activeAds={2}
-              reelsProgress={5} reelsTotal={12}
-              postsProgress={16} postsTotal={20}
-              logoColor="bg-rose-200 text-rose-800"
-              initial="LA"
-              updated="Updated 3h ago"
-              avatars={['AM']}
-              warning
-            />
-
             {/* Add New Track */}
             <button className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-200 rounded-3xl hover:border-indigo-400 hover:bg-indigo-50/50 transition-colors h-full min-h-[280px] text-gray-500 hover:text-indigo-600 group">
               <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center font-black mb-4 transition-colors">
