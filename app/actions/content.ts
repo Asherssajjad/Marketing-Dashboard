@@ -73,3 +73,24 @@ export async function addContentItem(planId: string, data: { type: string, notes
     return { error: "Failed to add content item" };
   }
 }
+
+export async function getClientContentDetail(clientId: string) {
+  return prisma.client.findUnique({
+    where: { id: clientId },
+    include: {
+      packages: {
+        include: {
+          monthlyPlans: {
+            include: { 
+              contentItems: {
+                orderBy: { createdAt: 'desc' }
+              }
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 12
+          }
+        }
+      }
+    }
+  });
+}

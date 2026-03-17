@@ -1,140 +1,133 @@
 import { Topbar } from "@/components/Topbar";
-import { Eye, Edit2, TrendingUp, DollarSign, ClipboardList } from "lucide-react";
+import { Eye, Edit2, TrendingUp, DollarSign, ClipboardList, Plus, MoreHorizontal, Search, Filter, ArrowUpRight, Globe, Zap } from "lucide-react";
 import { getClients } from "@/app/actions/clients";
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
-
-// Define a type that includes the related packages
-type ClientWithPackages = Prisma.ClientGetPayload<{
-  include: { packages: true, tasks: true }
-}>;
+import { Badge } from "@/components/ui/badge";
 
 export default async function ClientsPage() {
   const clients = await getClients();
-  const totalRevenue = clients.reduce((sum, client) => {
-     return sum + (client.packages[0]?.price || 0)
-  }, 0);
+
+  const totalRevenue = clients.reduce((acc, c) => acc + (c.packages[0]?.price || 0), 0);
+  const activeSlas = clients.filter(c => c.packages.length > 0).length;
 
   return (
     <>
-      <Topbar title="Clients" breadcrumb="Home" />
+      <Topbar title="Partner Intelligence" breadcrumb="AXION" />
       
-      <div className="flex-1 overflow-auto p-4 md:p-8">
-        <div className="max-w-[1280px] mx-auto space-y-8">
+      <div className="flex-1 overflow-auto p-4 md:p-8 bg-[#F9FAFB]">
+        <div className="max-w-[1400px] mx-auto space-y-10">
           
-          {/* Action & Filter Bar */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex gap-4 items-center flex-1">
-              <select className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 outline-none">
-                <option>Platform</option>
-              </select>
-              <select className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 outline-none">
-                <option>Payment Status</option>
-              </select>
-              <select className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 outline-none">
-                <option>Team Member</option>
-              </select>
-              <button className="text-sm text-indigo-600 font-bold hover:text-indigo-800 transition-colors">Clear All</button>
-            </div>
-            <div className="text-sm font-medium text-gray-500 flex items-center gap-4">
-              <span>Showing <strong className="text-gray-900">{clients.length}</strong> clients</span>
-              <Link href="/clients/new" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg tracking-wide text-sm transition-colors shadow-sm">
-                + Add New Client
-              </Link>
-            </div>
+          {/* Action Row */}
+          <div className="flex flex-col lg:row justify-between items-start lg:items-center gap-6 bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full translate-x-32 -translate-y-32 blur-3xl"></div>
+             <div className="relative z-10">
+               <h1 className="text-3xl font-black text-gray-900 tracking-tight italic uppercase">Client Ecosystem</h1>
+               <p className="text-sm text-gray-500 font-bold uppercase tracking-widest text-[10px] mt-1 opacity-60">Managing {clients.length} Active Global Partnerships</p>
+             </div>
+             <div className="flex items-center gap-4 relative z-10">
+                <div className="relative group hidden md:block">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-600 transition-colors" size={16} />
+                   <input className="pl-11 pr-5 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500 w-72 transition-all shadow-inner" placeholder="Search partners..." />
+                </div>
+                <Link href="/clients/new" className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black flex items-center gap-3 transition-all shadow-xl shadow-indigo-100 uppercase tracking-widest italic">
+                   <Plus size={18} /> Initialize Partner
+                </Link>
+             </div>
           </div>
 
-          {/* Client Table */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+          {/* KPI Analytics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <AnalyticsCard icon={<Users size={24} />} label="Total Partners" value={clients.length} trend="+2 New" positive color="text-indigo-600" bgColor="bg-indigo-50" />
+            <AnalyticsCard icon={<DollarSign size={24} />} label="Portfolio Revenue" value={`$${totalRevenue.toLocaleString()}`} trend="+$4.2k" positive color="text-emerald-600" bgColor="bg-emerald-50" />
+            <AnalyticsCard icon={<Zap size={24} />} label="Active SLAs" value={activeSlas} trend="98% Uptime" positive color="text-amber-600" bgColor="bg-amber-50" />
+          </div>
+
+          {/* Client Table Section */}
+          <div className="bg-white border border-gray-100 rounded-[32px] shadow-sm overflow-hidden border-t-8 border-t-indigo-600">
+            <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+               <h3 className="text-lg font-black text-gray-900 uppercase italic tracking-widest">Partner Directory</h3>
+               <button className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-indigo-600 transition-all shadow-sm">
+                  <Filter size={20} />
+               </button>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-gray-100 text-[11px] uppercase tracking-wider text-gray-400 font-bold">
-                    <th className="px-6 py-4">Client Name</th>
-                    <th className="px-6 py-4">Platforms</th>
-                    <th className="px-6 py-4">Active Package</th>
-                    <th className="px-6 py-4">Content Progress</th>
-                    <th className="px-6 py-4 text-center">Payment Status</th>
-                    <th className="px-6 py-4 text-center">Team</th>
-                    <th className="px-6 py-4 text-center">Actions</th>
+                  <tr className="bg-white border-b border-gray-50 text-[10px] uppercase tracking-[0.2em] text-gray-300 font-black">
+                    <th className="px-8 py-6">Partner Identity</th>
+                    <th className="px-8 py-6">Ecosystems</th>
+                    <th className="px-8 py-6">SLA Level</th>
+                    <th className="px-8 py-6">Operational Load</th>
+                    <th className="px-8 py-6 text-center">Status</th>
+                    <th className="px-8 py-6 text-right">Ops</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50 font-bold text-sm bg-white">
                   {clients.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500 font-medium">
-                        No clients found. Click "Add New Client" to get started.
+                      <td colSpan={6} className="px-8 py-24 text-center">
+                         <div className="flex flex-col items-center gap-4 text-gray-200">
+                            <Globe size={64} className="stroke-1" />
+                            <p className="font-black uppercase tracking-widest text-xs">No active partnerships detected</p>
+                         </div>
                       </td>
                     </tr>
                   ) : (
-                    clients.map((client) => {
-                      const activePackage = client.packages[0];
-                      // Hash string to pick a color
-                      const colors = ['bg-[#1C3B34]', 'bg-[#2E6B65]', 'bg-[#EAE4D9]', 'bg-indigo-600', 'bg-rose-500'];
-                      const colorIndex = client.name.length % colors.length;
-
-                      return (
-                         <ClientRow 
-                           key={client.id}
-                           name={client.name} 
-                           url={client.contact || "No email"}
-                           platforms={client.platforms}
-                           package={activePackage?.name || "No Package"}
-                           progress="Active"
-                           percent={0} // To be implemented with content tracker logic
-                           status={client.status === "ACTIVE" ? "Paid" : "Pending"}
-                           logoColor={colors[colorIndex]}
-                         />
-                      )
-                    })
+                    clients.map((client) => (
+                      <tr key={client.id} className="hover:bg-gray-50/50 transition-all group">
+                         <td className="px-8 py-6">
+                            <Link href={`/clients/${client.id}`} className="flex items-center gap-5">
+                               <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-lg italic shadow-inner transition-transform group-hover:scale-110">
+                                  {client.name.charAt(0)}
+                               </div>
+                               <div>
+                                  <p className="text-gray-900 font-black uppercase italic tracking-tight group-hover:text-indigo-600 transition-colors text-base">{client.name}</p>
+                                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 italic">{client.contact || "Unverified Contact"}</p>
+                               </div>
+                            </Link>
+                         </td>
+                         <td className="px-8 py-6">
+                            <div className="flex gap-2">
+                               {client.platforms.map((p: string) => (
+                                 <span key={p} className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm">
+                                   {p}
+                                 </span>
+                               ))}
+                            </div>
+                         </td>
+                         <td className="px-8 py-6">
+                            <p className="text-gray-900 font-black text-xs uppercase italic tracking-tight">{client.packages[0]?.name || "Standard Engine"}</p>
+                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-0.5">${client.packages[0]?.price?.toLocaleString() || 0} / MO</p>
+                         </td>
+                         <td className="px-8 py-6">
+                            <div className="space-y-2">
+                               <div className="flex justify-between items-end">
+                                  <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Throughput</span>
+                                  <span className="text-[10px] font-black text-indigo-600 italic">45%</span>
+                               </div>
+                               <div className="w-32 bg-gray-50 h-1.5 rounded-full overflow-hidden shadow-inner">
+                                  <div className="bg-indigo-600 h-full rounded-full shadow-[0_0_8px_rgba(79,70,229,0.3)]" style={{ width: '45%' }}></div>
+                               </div>
+                            </div>
+                         </td>
+                         <td className="px-8 py-6 text-center">
+                            <Badge className="bg-emerald-500 text-white border-none font-black tracking-widest text-[9px] px-3 py-1 uppercase italic shadow-sm ring-4 ring-emerald-50/50">Active</Badge>
+                         </td>
+                         <td className="px-8 py-6 text-right">
+                             <div className="flex justify-end gap-3">
+                                <Link href={`/clients/${client.id}`} className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-300 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all shadow-sm border border-transparent">
+                                   <Eye size={18} />
+                                </Link>
+                                <button className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-300 hover:bg-gray-100 rounded-xl transition-all shadow-sm">
+                                   <MoreHorizontal size={18} />
+                                </button>
+                             </div>
+                         </td>
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
-            </div>
-            
-            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-              <div className="flex gap-2">
-                <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50" disabled>Previous</button>
-                <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">Next</button>
-              </div>
-              <div className="flex items-center gap-1">
-                <button className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm">1</button>
-                <button className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-700 font-medium text-sm">2</button>
-                <button className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-700 font-medium text-sm">3</button>
-                <span className="px-2 text-gray-400">...</span>
-                <button className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-700 font-medium text-sm">12</button>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom KPI Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <TrendingUp size={20} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Active Projects</p>
-                <p className="text-2xl font-bold text-gray-900 leading-tight">42</p>
-              </div>
-            </div>
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                <DollarSign size={20} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900 leading-tight">$12,480</p>
-              </div>
-            </div>
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
-                <ClipboardList size={20} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900 leading-tight">18</p>
-              </div>
             </div>
           </div>
 
@@ -144,59 +137,22 @@ export default async function ClientsPage() {
   );
 }
 
-function ClientRow({ name, url, platforms, package: pkg, progress, percent, status, color, logoColor }: any) {
-  return (
-    <tr className="hover:bg-gray-50/50 transition-colors group">
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-4">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0 ${logoColor}`}>
-            {name.charAt(0)}
-          </div>
-          <div>
-            <p className="font-bold text-gray-900 text-sm leading-tight">{name}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{url}</p>
-          </div>
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <div className="flex flex-wrap gap-1.5">
-          {platforms.map((p: string) => (
-            <span key={p} className="px-2 py-1 bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-wider rounded-md">
-              {p}
-            </span>
-          ))}
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <span className="font-semibold text-gray-700 text-sm">{pkg}</span>
-      </td>
-      <td className="px-6 py-4 w-48">
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs font-semibold text-gray-500">{progress}</span>
-          <span className="text-xs font-bold text-indigo-600">{percent}%</span>
-        </div>
-        <div className="w-full bg-indigo-50 rounded-full h-1.5">
-          <div className="bg-indigo-600 h-1.5 rounded-full" style={{ width: `${percent}%` }}></div>
-        </div>
-      </td>
-      <td className="px-6 py-4 text-center">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${status === 'Paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-          <div className={`w-1.5 h-1.5 rounded-full ${status === 'Paid' ? 'bg-emerald-600' : 'bg-amber-600'}`}></div>
-          {status}
-        </span>
-      </td>
-      <td className="px-6 py-4">
-        <div className="flex justify-center -space-x-2 overflow-hidden">
-          <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600">JD</div>
-          <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-600">SM</div>
-        </div>
-      </td>
-      <td className="px-6 py-4 text-center">
-        <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button className="p-1.5 text-gray-400 hover:text-indigo-600 bg-white rounded shadow-sm border border-gray-100 transition-colors"><Eye size={16} /></button>
-          <button className="p-1.5 text-gray-400 hover:text-indigo-600 bg-white rounded shadow-sm border border-gray-100 transition-colors"><Edit2 size={16} /></button>
-        </div>
-      </td>
-    </tr>
-  );
+function AnalyticsCard({ icon, label, value, trend, positive, color, bgColor }: any) {
+   return (
+      <div className="bg-white border border-gray-100 rounded-[32px] p-8 shadow-sm group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+         <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full translate-x-16 -translate-y-16 group-hover:bg-indigo-50/30 transition-colors -z-10"></div>
+         <div className="flex items-center justify-between mb-8">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100/20 transition-transform group-hover:scale-110 ${bgColor} ${color}`}>
+              {icon}
+            </div>
+            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase italic shadow-sm ${positive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+               <TrendingUp size={12} /> {trend}
+            </div>
+         </div>
+         <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1.5 opacity-60 italic">{label}</p>
+            <p className="text-3xl font-black text-gray-900 leading-none tracking-tighter italic">{value}</p>
+         </div>
+      </div>
+   )
 }

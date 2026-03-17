@@ -49,3 +49,28 @@ export async function getClients() {
     orderBy: { createdAt: 'desc' }
   });
 }
+
+export async function getClientDetail(id: string) {
+  return prisma.client.findUnique({
+    where: { id },
+    include: {
+      packages: {
+        include: {
+          monthlyPlans: {
+            include: { contentItems: true },
+            orderBy: { createdAt: 'desc' }
+          }
+        }
+      },
+      projects: {
+        include: { tasks: true }
+      },
+      tasks: {
+        include: { comments: true }
+      },
+      payments: {
+        include: { invoice: true }
+      }
+    }
+  });
+}
