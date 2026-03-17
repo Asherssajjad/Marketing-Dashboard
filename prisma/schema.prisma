@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  TEAM_MEMBER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  role          Role      @default(TEAM_MEMBER)
+  createdAt     DateTime  @default(now())
+  
+  tasks         Task[]    @relation("AssignedTasks")
+  comments      TaskComment[]
+  notifications Notification[]
+  clientsCreated Client[]  @relation("CreatedClients")
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  contact     String?
+  platforms   String[] // Array of strings e.g. ["Facebook", "Instagram"]
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  
+  createdBy   String
+  creator     User     @relation("CreatedClients", fields: [createdBy], references: [id])
+  
+  packages    Package[]
+  projects    Project[]
+  tasks       Task[]   @relation("ClientTasks")
+  payments    Payment[]
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  clientId    String
+  name        String
+  price       Float?
+  reels_pm    Int      @default(0)
+  posts_pm    Int      @default(0)
+  has_ads     Boolean  @default(false)
+  
+  client      Client   @relation(fields: [clientId], references: [id])
+  monthlyPlans MonthlyPlan[]
+}
+
+model MonthlyPlan {
+  id          String   @id @default(cuid())
+  packageId   String
+  month       Int
+  year        Int
+  status      String   @default("PLANNED")
+  
+  package     Package  @relation(fields: [packageId], references: [id])
+  contentItems ContentItem[]
+}
+
+model ContentItem {
+  id          String   @id @default(cuid())
+  planId      String
+  type        String   // REEL, POST, AD
+  status      String   @default("PLANNED") // PLANNED, IN_PRODUCTION, REVIEW, PUBLISHED
+  assignedTo  String?
+  notes       String?
+  
+  plan        MonthlyPlan @relation(fields: [planId], references: [id])
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  clientId    String
+  name        String
+  type        String   // Website, Landing Page, etc
+  status      String   @default("DISCOVERY") 
+  milestones  Json?    // Array of objects
+  dueDate     DateTime?
+  
+  client      Client   @relation(fields: [clientId], references: [id])
+  tasks       Task[]   @relation("ProjectTasks")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  assignedTo  String?
+  dueDate     DateTime?
+  status      String   @default("TODO") // TODO, IN_PROGRESS, REVIEW, DONE
+  
+  // Can be linked to client or project
+  clientId    String?
+  projectId   String?
+  
+  client      Client?  @relation("ClientTasks", fields: [clientId], references: [id])
+  project     Project? @relation("ProjectTasks", fields: [projectId], references: [id])
+  assignee    User?    @relation("AssignedTasks", fields: [assignedTo], references: [id])
+  
+  comments    TaskComment[]
+}
+
+model TaskComment {
+  id          String   @id @default(cuid())
+  taskId      String
+  userId      String
+  message     String
+  createdAt   DateTime @default(now())
+  
+  task        Task     @relation(fields: [taskId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  refId       String?
+  message     String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  clientId    String
+  month       Int
+  year        Int
+  amount      Float
+  status      String   @default("PENDING") // PENDING, PAID, OVERDUE
+  paidOn      DateTime?
+  
+  client      Client   @relation(fields: [clientId], references: [id])
+  invoices    Invoice[]
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  paymentId   String
+  invoiceNo   String   @unique
+  generatedAt DateTime @default(now())
+  pdfUrl      String?
+  
+  payment     Payment  @relation(fields: [paymentId], references: [id])
+}
