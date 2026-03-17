@@ -1,7 +1,24 @@
 import { Topbar } from "@/components/Topbar";
 import { MoreHorizontal, MessageSquare, Check, Trello, List } from "lucide-react";
+import { getProjects } from "@/app/actions/projects";
+import Link from "next/link";
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+
+  const columns = [
+    { title: "DISCOVERY", code: "DISCOVERY" },
+    { title: "DESIGN", code: "DESIGN" },
+    { title: "DEVELOPMENT", code: "DEVELOPMENT" },
+    { title: "REVIEW", code: "REVIEW" },
+    { title: "TESTING", code: "TESTING" },
+    { title: "LIVE", code: "LIVE" },
+  ];
+
+  const getProjectsByStatus = (status: string) => {
+    return projects.filter(p => p.status === status);
+  };
+
   return (
     <>
       <Topbar title="Web Development Pipeline" breadcrumb="Projects" />
@@ -16,61 +33,32 @@ export default function ProjectsPage() {
             </button>
          </div>
          
-         <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors">
+         <Link href="/projects/new" className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors">
             New Project
-         </button>
+         </Link>
       </div>
 
-      <div className="flex-1 overflow-x-auto overflow-y-hidden p-8 flex gap-6 pb-12">
-        
-        {/* Discovery Column */}
-        <KanbanColumn title="DISCOVERY" count={3}>
-           <ProjectCard 
-              type="REDESIGN"
-              typeColor="bg-indigo-50 text-indigo-600"
-              date="Jun 12"
-              title="E-commerce Portal"
-              client="Global Retail Inc."
-              progress={35}
-              avatars={['AD', 'MS']}
-              comments={4}
-           />
-        </KanbanColumn>
-
-        {/* Design Column */}
-        <KanbanColumn title="DESIGN" count={2}>
-           <ProjectCard 
-              type="NEW PROJECT"
-              typeColor="bg-purple-50 text-purple-600"
-              date="May 28"
-              title="Mobile Banking App"
-              client="FinTrust Bank"
-              progress={60}
-              avatars={['RC']}
-              plusAvatar="+2"
-              attachment
-           />
-        </KanbanColumn>
-
-        {/* Development Column */}
-        <KanbanColumn title="DEVELOPMENT" count={4}>
-           <ProjectCard 
-              type="REDESIGN"
-              typeColor="bg-indigo-50 text-indigo-600"
-              date="May 15"
-              title="Corporate Website"
-              client="Zenith Corp"
-              progress={85}
-              avatars={['LM', 'SK']}
-              checked
-           />
-        </KanbanColumn>
-
-        {/* Review Column (empty placeholder) */}
-        <KanbanColumn title="REVIEW" count={0}>
-            {/* Empty state can be placed here */}
-        </KanbanColumn>
-
+      <div className="flex-1 overflow-x-auto p-8 flex gap-6 pb-12 items-start">
+        {columns.map((col) => {
+          const colProjects = getProjectsByStatus(col.code);
+          return (
+            <KanbanColumn key={col.code} title={col.title} count={colProjects.length}>
+              {colProjects.map((p) => (
+                <ProjectCard 
+                  key={p.id}
+                  type={p.type || "PROJECT"}
+                  typeColor={p.type === "REDESIGN" ? "bg-indigo-50 text-indigo-600" : "bg-purple-50 text-purple-600"}
+                  date={p.dueDate ? new Date(p.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "--"}
+                  title={p.name}
+                  client={p.client?.name || "No Client"}
+                  progress={0} // Fixed until calc logic added
+                  avatars={[]} // To be done with project-user relations
+                  comments={0}
+                />
+              ))}
+            </KanbanColumn>
+          );
+        })}
       </div>
     </>
   );
