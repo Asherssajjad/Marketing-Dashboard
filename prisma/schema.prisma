@@ -35,8 +35,8 @@ model Client {
   status      String   @default("ACTIVE")
   createdAt   DateTime @default(now())
   
-  createdBy   String
-  creator     User     @relation("CreatedClients", fields: [createdBy], references: [id])
+  createdBy   String?
+  creator     User?     @relation("CreatedClients", fields: [createdBy], references: [id])
   
   packages    Package[]
   projects    Project[]

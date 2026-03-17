@@ -1,7 +1,20 @@
 import { Topbar } from "@/components/Topbar";
 import { Eye, Edit2, TrendingUp, DollarSign, ClipboardList } from "lucide-react";
+import { getClients } from "@/app/actions/clients";
+import Link from "next/link";
+import { Prisma } from "@prisma/client";
 
-export default function ClientsPage() {
+// Define a type that includes the related packages
+type ClientWithPackages = Prisma.ClientGetPayload<{
+  include: { packages: true, tasks: true }
+}>;
+
+export default async function ClientsPage() {
+  const clients = await getClients();
+  const totalRevenue = clients.reduce((sum, client) => {
+     return sum + (client.packages[0]?.price || 0)
+  }, 0);
+
   return (
     <>
       <Topbar title="Clients" breadcrumb="Home" />
@@ -23,8 +36,11 @@ export default function ClientsPage() {
               </select>
               <button className="text-sm text-indigo-600 font-bold hover:text-indigo-800 transition-colors">Clear All</button>
             </div>
-            <div className="text-sm font-medium text-gray-500">
-              Showing <strong className="text-gray-900">24</strong> clients
+            <div className="text-sm font-medium text-gray-500 flex items-center gap-4">
+              <span>Showing <strong className="text-gray-900">{clients.length}</strong> clients</span>
+              <Link href="/clients/new" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg tracking-wide text-sm transition-colors shadow-sm">
+                + Add New Client
+              </Link>
             </div>
           </div>
 
@@ -44,39 +60,34 @@ export default function ClientsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  <ClientRow 
-                    name="Velvet & Co." 
-                    url="velvet-co.com"
-                    platforms={['INSTAGRAM', 'TIKTOK']}
-                    package="Premium Content"
-                    progress="Milestone 3/4"
-                    percent={65}
-                    status="Paid"
-                    color="bg-emerald-500"
-                    logoColor="bg-[#1C3B34]"
-                  />
-                  <ClientRow 
-                    name="Lumina Digital" 
-                    url="lumina.io"
-                    platforms={['LINKEDIN', 'TWITTER']}
-                    package="Standard Strategy"
-                    progress="Milestone 1/4"
-                    percent={25}
-                    status="Pending"
-                    color="bg-amber-500"
-                    logoColor="bg-[#2E6B65]"
-                  />
-                  <ClientRow 
-                    name="Aura Wellness" 
-                    url="aura.life"
-                    platforms={['INSTAGRAM', 'YOUTUBE']}
-                    package="Enterprise Suite"
-                    progress="Milestone 4/5"
-                    percent={85}
-                    status="Paid"
-                    color="bg-emerald-500"
-                    logoColor="bg-[#EAE4D9]"
-                  />
+                  {clients.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500 font-medium">
+                        No clients found. Click "Add New Client" to get started.
+                      </td>
+                    </tr>
+                  ) : (
+                    clients.map((client) => {
+                      const activePackage = client.packages[0];
+                      // Hash string to pick a color
+                      const colors = ['bg-[#1C3B34]', 'bg-[#2E6B65]', 'bg-[#EAE4D9]', 'bg-indigo-600', 'bg-rose-500'];
+                      const colorIndex = client.name.length % colors.length;
+
+                      return (
+                         <ClientRow 
+                           key={client.id}
+                           name={client.name} 
+                           url={client.contact || "No email"}
+                           platforms={client.platforms}
+                           package={activePackage?.name || "No Package"}
+                           progress="Active"
+                           percent={0} // To be implemented with content tracker logic
+                           status={client.status === "ACTIVE" ? "Paid" : "Pending"}
+                           logoColor={colors[colorIndex]}
+                         />
+                      )
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
