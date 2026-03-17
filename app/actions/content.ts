@@ -11,7 +11,9 @@ export async function getContentTrackers() {
         include: {
           monthlyPlans: {
             include: {
-              contentItems: true
+              contentItems: {
+                orderBy: { createdAt: 'desc' }
+              }
             },
             orderBy: { createdAt: 'desc' },
             take: 1
@@ -20,6 +22,18 @@ export async function getContentTrackers() {
       }
     }
   });
+}
+
+export async function markContentAsPublished(itemId: string) {
+  try {
+    await prisma.contentItem.update({
+      where: { id: itemId },
+      data: { status: "PUBLISHED" }
+    });
+    revalidatePath("/content");
+  } catch (error) {
+    console.error("Failed to update content status:", error);
+  }
 }
 
 export async function createMonthlyPlan(packageId: string, month: number, year: number) {
