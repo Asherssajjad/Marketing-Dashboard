@@ -46,12 +46,9 @@ export default async function NewProjectPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700">Initial Status</label>
                   <select name="status" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="DISCOVERY">Discovery</option>
-                    <option value="DESIGN">Design</option>
-                    <option value="DEVELOPMENT">Development</option>
-                    <option value="REVIEW">Review</option>
-                    <option value="TESTING">Testing</option>
-                    <option value="LIVE">Live</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="COMPLETED">Completed</option>
                   </select>
                 </div>
 

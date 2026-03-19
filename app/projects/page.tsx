@@ -7,12 +7,9 @@ export default async function ProjectsPage() {
   const projects = await getProjects();
 
   const columns = [
-    { title: "DISCOVERY", code: "DISCOVERY" },
-    { title: "DESIGN", code: "DESIGN" },
-    { title: "DEVELOPMENT", code: "DEVELOPMENT" },
-    { title: "REVIEW", code: "REVIEW" },
-    { title: "TESTING", code: "TESTING" },
-    { title: "LIVE", code: "LIVE" },
+    { title: "PENDING", code: "PENDING" },
+    { title: "IN PROGRESS", code: "IN_PROGRESS" },
+    { title: "COMPLETED", code: "COMPLETED" },
   ];
 
   const getProjectsByStatus = (status: string) => {
