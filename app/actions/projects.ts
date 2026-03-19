@@ -17,7 +17,7 @@ export async function createProject(formData: FormData) {
   const name = formData.get("name") as string;
   const clientId = formData.get("clientId") as string;
   const type = formData.get("type") as string;
-  const status = formData.get("status") as string || "DISCOVERY";
+  const status = formData.get("status") as string || "PENDING";
   const dueDateStr = formData.get("dueDate") as string;
   
   const dueDate = dueDateStr ? new Date(dueDateStr) : undefined;
