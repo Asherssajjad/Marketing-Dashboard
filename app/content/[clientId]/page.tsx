@@ -80,6 +80,7 @@ export default async function ClientContentPage({ params }: { params: { clientId
                   <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6">Log Production</h3>
                   <form action={createContentLog} className="space-y-4">
                      <input type="hidden" name="planId" value={currentPlan?.id || ""} />
+                     <input type="hidden" name="clientId" value={client.id} />
                      
                      <div className="space-y-2">
                         <label className="text-[10px] font-bold text-gray-500 uppercase">Content Type</label>
