@@ -11,10 +11,14 @@ import {
   CreditCard, 
   BarChart2, 
   Settings, 
-  Zap, 
-  Globe, 
+  Zap,
+  Globe,
   ShieldCheck,
-  Cpu
+  Cpu,
+  Terminal,
+  Activity,
+  Layers,
+  ArrowUpRight
 } from "lucide-react";
 
 export function Sidebar() {
@@ -32,78 +36,101 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-[280px] bg-white border-r border-gray-100 flex flex-col shrink-0 shadow-2xl shadow-indigo-100/10 z-20 relative">
-      <div className="absolute right-0 top-0 w-px h-full bg-gradient-to-b from-transparent via-gray-100 to-transparent"></div>
+    <aside className="w-[300px] bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 z-40 relative group overflow-hidden">
       
-      {/* Brand Identity */}
-      <div className="h-24 flex items-center px-8 gap-4 border-b border-gray-50 bg-gray-50/20">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-100 ring-4 ring-indigo-50 transition-transform hover:rotate-12">
-          <Zap size={22} fill="currentColor" />
+      {/* Dynamic Background Effects */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-600/10 via-transparent to-transparent -z-10"></div>
+      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse"></div>
+
+      {/* Brand Identity / Command Center Logo */}
+      <div className="h-28 flex items-center px-10 gap-5 border-b border-slate-800/50 bg-slate-900/40 backdrop-blur-md relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.5)]"></div>
+        <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-indigo-900/50 ring-4 ring-indigo-500/20 transition-all duration-500 group-hover:rotate-12 group-hover:scale-110">
+          <Zap size={28} fill="currentColor" />
         </div>
         <div>
-          <h1 className="font-black text-2xl text-gray-900 leading-none tracking-tighter italic">AXION</h1>
-          <p className="text-[9px] text-gray-400 font-black tracking-[0.2em] uppercase mt-1 opacity-60">Control Nexus</p>
+          <h1 className="font-black text-2xl text-white leading-none tracking-tighter italic uppercase group-hover:tracking-wider transition-all duration-700">AXION</h1>
+          <p className="text-[10px] text-indigo-400/60 font-black tracking-[0.3em] uppercase mt-2 italic">Command Intel</p>
         </div>
       </div>
 
-      {/* Navigation Ecosystem */}
-      <div className="flex-1 py-10 px-6 flex flex-col gap-2 overflow-y-auto no-scrollbar">
-        <div className="mb-4 px-4 text-[9px] font-black text-gray-300 uppercase tracking-widest italic">Core Modules</div>
+      {/* Navigation Ecosystem Grid */}
+      <div className="flex-1 py-12 px-8 flex flex-col gap-3 overflow-y-auto no-scrollbar">
+        <div className="flex items-center gap-3 mb-6 px-4">
+           <Terminal size={12} className="text-slate-600" />
+           <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] italic">System Modules</span>
+        </div>
+        
         {mainNav.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all font-black text-[11px] uppercase tracking-widest italic group
+              className={`flex items-center gap-5 px-6 py-4 rounded-[22px] transition-all duration-300 font-black text-[11px] uppercase tracking-[0.15em] italic group/item relative overflow-hidden
                 ${isActive 
-                  ? "bg-indigo-600 text-white shadow-xl shadow-indigo-100 translate-x-1" 
-                  : "text-gray-400 hover:bg-gray-50 hover:text-gray-900 border border-transparent hover:border-gray-100"
+                  ? "bg-indigo-600 text-white shadow-2xl shadow-indigo-900/40 translate-x-2" 
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-white border border-transparent hover:border-slate-700/50"
                 }`}
             >
-              <div className={`${isActive ? "text-white" : "text-gray-300 group-hover:text-indigo-600"} transition-colors`}>
+              <div className={`${isActive ? "text-white" : "text-slate-600 group-hover/item:text-indigo-400"} transition-colors duration-300`}>
                 {item.icon}
               </div>
-              {item.name}
-              {isActive && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_white]"></div>
+              <span className="relative z-10">{item.name}</span>
+              {isActive ? (
+                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_10px_white] animate-pulse"></div>
+              ) : (
+                <ArrowUpRight size={14} className="ml-auto opacity-0 -translate-x-2 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all duration-500 text-slate-700" />
               )}
             </Link>
           );
         })}
       </div>
 
-      {/* Infrastructure Panel */}
-      <div className="p-6 border-t border-gray-50 bg-gray-50/30 space-y-4">
+      {/* Infrastructure & Intelligence Panel */}
+      <div className="p-8 border-t border-slate-800/50 bg-slate-900/60 backdrop-blur-xl space-y-6">
         <Link
           href="/settings"
-          className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all font-black text-[10px] uppercase tracking-widest italic group
+          className={`flex items-center gap-5 px-6 py-4 rounded-[22px] transition-all duration-300 font-black text-[11px] uppercase tracking-widest italic group/set border border-slate-800
             ${pathname === "/settings" 
-              ? "bg-gray-900 text-white shadow-xl" 
-              : "text-gray-400 hover:text-gray-900 hover:bg-white hover:shadow-lg hover:shadow-gray-200/40"
+              ? "bg-slate-100 text-slate-900 shadow-xl" 
+              : "text-slate-500 hover:text-white hover:bg-slate-800"
             }`}
         >
-          <Settings size={18} className="text-gray-400 group-hover:text-gray-900" />
-          Protocol Config
+          <Settings size={18} className="text-slate-600 group-hover/set:rotate-90 transition-transform duration-700" />
+          Protocol CFG
         </Link>
 
-        <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm relative overflow-hidden group">
-           <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-50 rounded-full translate-x-8 -translate-y-8 group-hover:bg-emerald-100 transition-colors"></div>
-           <div className="flex items-center gap-2 mb-3 relative z-10">
-              <Cpu size={14} className="text-emerald-500 animate-pulse" />
-              <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest italic">System Active</p>
+        <div className="bg-slate-800/40 rounded-[30px] p-6 border border-slate-800 relative group/stat cursor-pointer hover:bg-slate-800/60 transition-colors">
+           <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                    <Activity size={18} className="text-emerald-500 animate-[pulse_1s_infinite]" />
+                 </div>
+                 <div>
+                    <p className="text-[10px] font-black text-white uppercase tracking-widest italic leading-none">Global Sync</p>
+                    <p className="text-[8px] text-emerald-500 uppercase tracking-widest mt-1 opacity-60">Status: Peak</p>
+                 </div>
+              </div>
+              <Layers size={14} className="text-slate-700 group-hover/stat:text-indigo-400 transition-colors" />
            </div>
-           <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden shadow-inner relative z-10">
-              <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 w-[88%] rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]"></div>
+           
+           <div className="space-y-2.5">
+              <div className="flex justify-between items-end px-1">
+                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Load Capacity</span>
+                 <span className="text-[10px] font-black text-emerald-500 italic">94.8%</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-700/50 rounded-full overflow-hidden shadow-inner flex">
+                 <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 w-[94.8%] rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-1000"></div>
+              </div>
            </div>
-           <p className="text-[9px] text-gray-400 font-bold mt-2 uppercase tracking-tighter relative z-10">Throughput: 88.4% Optimal</p>
         </div>
         
-        <div className="flex items-center justify-between px-2 pt-2">
-           <div className="flex items-center gap-2 text-[10px] font-black text-gray-300 uppercase tracking-widest italic">
-              <ShieldCheck size={14} /> Encrypted
+        <div className="flex items-center justify-between px-4 pb-2">
+           <div className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] italic">
+              <ShieldCheck size={14} className="text-indigo-500/50" /> Encrypted Node
            </div>
-           <span className="text-[8px] font-black text-gray-200">v4.0.2-BETA</span>
+           <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">v4.0.2</span>
         </div>
       </div>
     </aside>
