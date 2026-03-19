@@ -95,20 +95,53 @@ export async function addContentItem(planId: string, data: { type: string, notes
   }
 }
 export async function createContentLog(formData: FormData) {
-  const planId = formData.get("planId") as string;
+  let planId = formData.get("planId") as string;
   const type = formData.get("type") as string;
-  const scheduledDate = formData.get("scheduledDate") as string;
+  const scheduledDateStr = formData.get("scheduledDate") as string;
   const notes = formData.get("notes") as string;
+  const clientId = formData.get("clientId") as string;
+
+  // If planId is missing, we need to find or create one for the current month
+  if (!planId && clientId) {
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      include: { packages: true }
+    });
+
+    const pkg = client?.packages[0];
+    if (pkg) {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+
+      let plan = await prisma.monthlyPlan.findFirst({
+        where: { packageId: pkg.id, month, year }
+      });
+
+      if (!plan) {
+        plan = await prisma.monthlyPlan.create({
+          data: { packageId: pkg.id, month, year }
+        });
+      }
+      planId = plan.id;
+    }
+  }
+
+  if (!planId) {
+    console.error("Cannot create content log: Missing Plan ID and no client package found.");
+    return;
+  }
 
   await prisma.contentItem.create({
     data: {
       planId,
       type,
-      status: "PUBLISHED", // Logging historical content
-      scheduledDate: scheduledDate ? new Date(scheduledDate) : new Date(),
+      status: "PUBLISHED",
+      scheduledDate: scheduledDateStr ? new Date(scheduledDateStr) : new Date(),
       notes
     }
   });
 
   revalidatePath("/content");
+  revalidatePath(`/content/${clientId}`);
 }
