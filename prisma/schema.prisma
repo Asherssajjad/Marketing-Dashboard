@@ -52,6 +52,8 @@ model Package {
   reels_pm    Int      @default(0)
   posts_pm    Int      @default(0)
   has_ads     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
   client      Client   @relation(fields: [clientId], references: [id])
   monthlyPlans MonthlyPlan[]
@@ -63,6 +65,8 @@ model MonthlyPlan {
   month       Int
   year        Int
   status      String   @default("PLANNED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
   package     Package  @relation(fields: [packageId], references: [id])
   contentItems ContentItem[]
@@ -75,6 +79,8 @@ model ContentItem {
   status      String   @default("PLANNED") // PLANNED, IN_PRODUCTION, REVIEW, PUBLISHED
   assignedTo  String?
   notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
   plan        MonthlyPlan @relation(fields: [planId], references: [id])
 }
