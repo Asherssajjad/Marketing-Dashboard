@@ -48,28 +48,56 @@ export default async function ClientContentPage({ params }: { params: { clientId
                       <div key={day} className="px-4 py-3 text-[10px] font-black tracking-widest text-gray-400 uppercase text-center border-r last:border-0 border-gray-100">{day}</div>
                     ))}
                   </div>
-                  <div className="grid grid-cols-7 grid-rows-5 h-[600px]">
-                     {Array.from({ length: 35 }).map((_, i) => {
-                        const dateNum = i - 2; // Offset for demo
-                        const mockDate = `2024-03-${dateNum.toString().padStart(2, '0')}`;
-                        const dayItems = itemsByDate[mockDate] || [];
+                   <div className="grid grid-cols-7 border-gray-100">
+                     {(() => {
+                        const now = new Date();
+                        const currentYear = now.getFullYear();
+                        const currentMonth = now.getMonth();
+                        const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+                        // Adjust for Mon-Sun (getDay is 0 for Sun)
+                        const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+                        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                        const today = now.getDate();
+                        
+                        return Array.from({ length: 35 }).map((_, i) => {
+                           const dayNum = i - startOffset + 1;
+                           const isCurrentMonth = dayNum > 0 && dayNum <= daysInMonth;
+                           const dateKey = isCurrentMonth 
+                              ? `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`
+                              : null;
+                           const dayItems = dateKey ? itemsByDate[dateKey] || [] : [];
+                           const isToday = isCurrentMonth && dayNum === today;
 
-                        return (
-                          <div key={i} className="border-r border-b border-gray-100 p-2 hover:bg-gray-50 transition-colors group relative overflow-y-auto">
-                             <span className={`text-[11px] font-black ${dateNum > 0 && dateNum < 32 ? 'text-gray-400' : 'text-gray-200'} mb-2 block`}>
-                               {dateNum > 0 && dateNum < 32 ? dateNum : ''}
-                             </span>
-                             <div className="space-y-1">
-                                {dayItems.map((item: any) => (
-                                  <div key={item.id} className={`p-1 rounded text-[9px] font-bold truncate flex items-center gap-1 ${item.type === 'REEL' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
-                                     {item.type === 'REEL' ? <Video size={10}/> : <Image size={10}/>}
-                                     {item.type}
-                                  </div>
-                                ))}
+                           return (
+                             <div key={i} className={`border-r border-b border-gray-100 p-2 min-h-[120px] hover:bg-gray-50/50 transition-colors group relative overflow-y-auto ${isToday ? 'bg-indigo-50/30' : ''}`}>
+                                {isCurrentMonth && (
+                                   <>
+                                      <div className="flex items-center justify-between mb-2">
+                                         <span className={`text-[11px] font-black ${isToday ? 'text-indigo-600' : 'text-gray-400'}`}>
+                                           {dayNum}
+                                         </span>
+                                         {isToday && <span className="text-[8px] font-black bg-indigo-600 text-white px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Today</span>}
+                                      </div>
+                                      <div className="space-y-1">
+                                         {dayItems.map((item: any) => (
+                                           <div key={item.id} className={`p-1.5 rounded-lg text-[9px] font-bold truncate flex items-center gap-1.5 shadow-sm border ${item.type === 'REEL' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
+                                              {item.type === 'REEL' ? <Video size={10} className="shrink-0"/> : <Image size={10} className="shrink-0"/>}
+                                              <span className="truncate">{item.notes || item.type}</span>
+                                           </div>
+                                         ))}
+                                         {dayItems.length === 0 && isToday && (
+                                            <div className="flex flex-col items-center justify-center h-12 border-2 border-dashed border-indigo-100 rounded-xl opacity-40">
+                                               <Plus size={12} className="text-indigo-300" />
+                                               <span className="text-[8px] font-bold text-indigo-300 uppercase">Plan Now</span>
+                                            </div>
+                                         )}
+                                      </div>
+                                   </>
+                                )}
                              </div>
-                          </div>
-                        )
-                     })}
+                           );
+                        });
+                     })()}
                   </div>
                </div>
             </div>
