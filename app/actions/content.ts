@@ -24,6 +24,27 @@ export async function getContentTrackers() {
   });
 }
 
+export async function getClientContent(clientId: string) {
+  return prisma.client.findUnique({
+    where: { id: clientId },
+    include: {
+      packages: {
+        include: {
+          monthlyPlans: {
+            include: {
+              contentItems: {
+                orderBy: { scheduledDate: 'asc' }
+              }
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 1
+          }
+        }
+      }
+    }
+  });
+}
+
 export async function markContentAsPublished(itemId: string) {
   try {
     await prisma.contentItem.update({
@@ -72,4 +93,22 @@ export async function addContentItem(planId: string, data: { type: string, notes
     console.error("Failed to add content item:", error);
     return { error: "Failed to add content item" };
   }
+}
+export async function createContentLog(formData: FormData) {
+  const planId = formData.get("planId") as string;
+  const type = formData.get("type") as string;
+  const scheduledDate = formData.get("scheduledDate") as string;
+  const notes = formData.get("notes") as string;
+
+  await prisma.contentItem.create({
+    data: {
+      planId,
+      type,
+      status: "PUBLISHED", // Logging historical content
+      scheduledDate: scheduledDate ? new Date(scheduledDate) : new Date(),
+      notes
+    }
+  });
+
+  revalidatePath("/content");
 }

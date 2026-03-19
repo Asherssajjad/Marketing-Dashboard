@@ -1,6 +1,7 @@
 import { Topbar } from "@/components/Topbar";
 import { MoreVertical, Plus } from "lucide-react";
 import { getContentTrackers } from "@/app/actions/content";
+import Link from "next/link";
 
 export default async function ContentEnginePage() {
   const clients = await getContentTrackers();
@@ -30,19 +31,20 @@ export default async function ContentEnginePage() {
               const colorIdx = client.name.length % colors.length;
 
               return (
-                <ContentCard 
-                  key={client.id}
-                  name={client.name} 
-                  activeAds={activePackage?.has_ads ? 1 : 0}
-                  reelsProgress={reelsPublished} 
-                  reelsTotal={reelsTotal}
-                  postsProgress={postsPublished} 
-                  postsTotal={postsTotal}
-                  logoColor={colors[colorIdx]}
-                  initial={client.name.charAt(0)}
-                  updated={currentPlan ? `Updated ${new Date(currentPlan.month).toDateString()}` : "No active plan"}
-                  avatars={[]}
-                />
+                <Link href={`/content/${client.id}`} key={client.id} className="block transition-transform hover:scale-[1.02]">
+                  <ContentCard 
+                    name={client.name} 
+                    activeAds={activePackage?.has_ads ? 1 : 0}
+                    reelsProgress={reelsPublished} 
+                    reelsTotal={reelsTotal}
+                    postsProgress={postsPublished} 
+                    postsTotal={postsTotal}
+                    logoColor={colors[colorIdx]}
+                    initial={client.name.charAt(0)}
+                    updated={currentPlan ? `Updated ${new Date(currentPlan.month).toDateString()}` : "No active plan"}
+                    avatars={[]}
+                  />
+                </Link>
               )
             })}
             
