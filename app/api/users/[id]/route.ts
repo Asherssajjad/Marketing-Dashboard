@@ -16,7 +16,7 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { id } = params.id; // Corrected params access
+    const { id } = params; // Fix: params is the object containing id
 
     if (id === session.user.id) {
       return new NextResponse("You cannot delete yourself", { status: 400 });
