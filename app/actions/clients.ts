@@ -3,16 +3,28 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "ADMIN") {
+    throw new Error("Unauthorized: Admin access required.");
+  }
+  return session;
+}
 
 export async function createClient(formData: FormData) {
-  const name = formData.get("name") as string;
-  const contact = formData.get("contact") as string;
-  const platforms = formData.getAll("platforms") as string[];
-  const pkgName = formData.get("package") as string;
-
-  if (!name || !pkgName) return { error: "Name and Package are required" };
-
   try {
+    await requireAdmin();
+    
+    const name = (formData.get("name") as string)?.trim();
+    const contact = (formData.get("contact") as string)?.trim();
+    const platforms = formData.getAll("platforms") as string[];
+    const pkgName = formData.get("package") as string;
+
+    if (!name || !pkgName) return { error: "Name and Package are required" };
+
     const client = await prisma.client.create({
       data: {
         name,
@@ -32,20 +44,35 @@ export async function createClient(formData: FormData) {
     revalidatePath("/clients");
     revalidatePath("/content");
     revalidatePath("/");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to create client:", error);
-    return { error: "Failed to create client wrapper" }
+    return { error: error.message || "Failed to create client" };
   }
 
   redirect("/clients");
 }
 
 export async function getClients() {
-  return prisma.client.findMany({
-    include: {
-      packages: true,
-      tasks: true,
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return [];
+
+    return await prisma.client.findMany({
+      select: {
+        id: true,
+        name: true,
+        contact: true,
+        platforms: true,
+        status: true,
+        createdAt: true,
+        packages: {
+          select: { name: true, price: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (error) {
+    console.error("GET_CLIENTS_ERROR", error);
+    return [];
+  }
 }

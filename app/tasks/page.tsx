@@ -137,7 +137,7 @@ function TaskRow({ task }: any) {
       <td className="px-6 py-4">
         <p className={`font-bold text-sm leading-tight ${isDone ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{task.title}</p>
         <div className="flex items-center gap-3 mt-1.5 text-[10px] font-black uppercase tracking-widest text-gray-400">
-          <span className="flex items-center gap-1"><MessageSquare size={12} /> {task.comments?.length || 0}</span>
+          <span className="flex items-center gap-1"><MessageSquare size={12} /> {task._count?.comments || 0}</span>
           {task.assignee ? <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">@{task.assignee.name}</span> : <span>Unassigned</span>}
         </div>
       </td>

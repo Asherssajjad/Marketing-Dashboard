@@ -45,7 +45,7 @@ export default async function ProjectsPage() {
                   date={p.dueDate ? new Date(p.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "--"}
                   title={p.name}
                   client={p.client?.name || "No Client"}
-                  tasksCount={p.tasks.length}
+                  tasksCount={p._count.tasks}
                 />
               ))}
             </KanbanColumn>
