@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FileText, Briefcase, CheckSquare, CreditCard, BarChart2, Settings, Zap } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { LayoutDashboard, Users, FileText, Briefcase, CheckSquare, CreditCard, BarChart2, Settings, Zap, LogOut } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const user = session?.user as any;
 
   const mainNav = [
     { name: "Dashboard", href: "/", icon: <LayoutDashboard size={20} /> },
@@ -13,9 +16,9 @@ export function Sidebar() {
     { name: "Content", href: "/content", icon: <FileText size={20} /> },
     { name: "Projects", href: "/projects", icon: <Briefcase size={20} /> },
     { name: "Tasks", href: "/tasks", icon: <CheckSquare size={20} /> },
-    { name: "Payments", href: "/payments", icon: <CreditCard size={20} /> },
-    { name: "Reports", href: "/reports", icon: <BarChart2 size={20} /> },
-  ];
+    { name: "Payments", href: "/payments", icon: <CreditCard size={20} />, adminOnly: true },
+    { name: "Reports", href: "/reports", icon: <BarChart2 size={20} />, adminOnly: true },
+  ].filter(item => !item.adminOnly || user?.role === "ADMIN");
 
   return (
     <aside className="w-[260px] bg-white border-r border-gray-100 flex flex-col shrink-0 shadow-sm z-20">
@@ -62,6 +65,13 @@ export function Sidebar() {
           <Settings size={20} className="text-gray-400" />
           Settings
         </Link>
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-medium text-sm"
+        >
+          <LogOut size={20} className="text-gray-400 group-hover:text-rose-600" />
+          Logout
+        </button>
         <div className="bg-indigo-50 rounded-xl p-4 mt-4">
           <p className="text-xs font-bold text-indigo-900 mb-2">PLAN USAGE</p>
           <div className="h-1.5 w-full bg-indigo-200 rounded-full overflow-hidden">
