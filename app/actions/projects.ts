@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export async function getProjects() {
   return prisma.project.findMany({
@@ -41,6 +42,8 @@ export async function createProject(formData: FormData) {
     console.error("Failed to create project:", error);
     return { error: "Failed to create project" }
   }
+  
+  redirect("/projects");
 }
 
 export async function updateProjectStatus(projectId: string, newStatus: string) {
@@ -52,5 +55,14 @@ export async function updateProjectStatus(projectId: string, newStatus: string) 
     revalidatePath("/projects");
   } catch (error) {
     console.error("Failed to update project status:", error);
+  }
+}
+
+export async function deleteProject(projectId: string) {
+  try {
+    await prisma.project.delete({ where: { id: projectId } });
+    revalidatePath("/projects");
+  } catch (error) {
+    console.error("Failed to delete project:", error);
   }
 }

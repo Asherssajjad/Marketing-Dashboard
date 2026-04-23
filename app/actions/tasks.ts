@@ -20,6 +20,8 @@ export async function createTask(formData: FormData) {
   const description = formData.get("description") as string;
   const status = formData.get("status") as string || "TODO";
   const dueDateStr = formData.get("dueDate") as string;
+  const clientId = formData.get("clientId") as string;
+  const projectId = formData.get("projectId") as string;
   
   const dueDate = dueDateStr ? new Date(dueDateStr) : undefined;
 
@@ -32,13 +34,15 @@ export async function createTask(formData: FormData) {
         description,
         status,
         dueDate,
+        clientId: clientId || null,
+        projectId: projectId || null,
       }
     });
 
     revalidatePath("/tasks");
   } catch (error) {
     console.error("Failed to create task:", error);
-    return { error: "Failed to create task wrapper" }
+    return { error: "Failed to create task" }
   }
 }
 
@@ -51,5 +55,14 @@ export async function updateTaskStatus(taskId: string, newStatus: string) {
     revalidatePath("/tasks");
   } catch (error) {
     console.error("Failed to update status:", error);
+  }
+}
+
+export async function deleteTask(taskId: string) {
+  try {
+    await prisma.task.delete({ where: { id: taskId } });
+    revalidatePath("/tasks");
+  } catch (error) {
+    console.error("Failed to delete task:", error);
   }
 }
