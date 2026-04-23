@@ -8,7 +8,7 @@ import { LayoutDashboard, Users, FileText, Briefcase, CheckSquare, CreditCard, B
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const user = session?.user as any;
+  const user = session?.user;
 
   const mainNav = [
     { name: "Dashboard", href: "/", icon: <LayoutDashboard size={20} /> },
