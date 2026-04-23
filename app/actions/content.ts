@@ -2,146 +2,157 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+async function requireAuth() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) throw new Error("Unauthorized");
+  return session;
+}
 
 export async function getContentTrackers() {
-  // Fetch clients with their active packages and monthly plans
-  return prisma.client.findMany({
-    include: {
-      packages: {
-        include: {
-          monthlyPlans: {
-            include: {
-              contentItems: {
-                orderBy: { createdAt: 'desc' }
-              }
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 1
+  try {
+    await requireAuth();
+    return prisma.client.findMany({
+      include: {
+        packages: {
+          include: {
+            monthlyPlans: {
+              include: {
+                contentItems: {
+                  include: { lastUpdatedBy: { select: { name: true } } },
+                  orderBy: { createdAt: 'desc' }
+                }
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 1
+            }
           }
         }
       }
-    }
-  });
+    });
+  } catch (error) {
+    return [];
+  }
 }
 
 export async function getClientContent(clientId: string) {
-  return prisma.client.findUnique({
-    where: { id: clientId },
-    include: {
-      packages: {
-        include: {
-          monthlyPlans: {
-            include: {
-              contentItems: {
-                orderBy: { scheduledDate: 'asc' }
-              }
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 1
+  try {
+    await requireAuth();
+    return prisma.client.findUnique({
+      where: { id: clientId },
+      include: {
+        packages: {
+          include: {
+            monthlyPlans: {
+              include: {
+                contentItems: {
+                  include: { lastUpdatedBy: { select: { name: true } } },
+                  orderBy: { scheduledDate: 'asc' }
+                }
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 1
+            }
           }
         }
       }
-    }
-  });
+    });
+  } catch (error) {
+    return null;
+  }
 }
 
-export async function markContentAsPublished(itemId: string) {
+export async function updateContentItem(itemId: string, data: { status?: string, notes?: string, scheduledDate?: string }) {
   try {
+    const session = await requireAuth();
+    
     await prisma.contentItem.update({
       where: { id: itemId },
-      data: { status: "PUBLISHED" }
-    });
-    revalidatePath("/content");
-  } catch (error) {
-    console.error("Failed to update content status:", error);
-  }
-}
-
-export async function createMonthlyPlan(packageId: string, month: number, year: number) {
-  try {
-    const plan = await prisma.monthlyPlan.create({
-      data: {
-        packageId,
-        month,
-        year,
-      }
-    });
-
-    revalidatePath("/content");
-    return plan;
-  } catch (error) {
-    console.error("Failed to create monthly plan:", error);
-    return { error: "Failed to create monthly plan" };
-  }
-}
-
-export async function addContentItem(planId: string, data: { type: string, notes?: string, assignedTo?: string }) {
-  try {
-    const item = await prisma.contentItem.create({
-      data: {
-        planId,
-        type: data.type,
+      data: { 
+        status: data.status,
         notes: data.notes,
-        assignedTo: data.assignedTo,
-        status: "PLANNED"
+        scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : undefined,
+        updatedById: session.user.id
       }
     });
 
     revalidatePath("/content");
-    return item;
+    return { success: true };
   } catch (error) {
-    console.error("Failed to add content item:", error);
-    return { error: "Failed to add content item" };
+    console.error("Failed to update content item:", error);
+    return { success: false };
   }
 }
+
+export async function deleteContentItem(itemId: string) {
+  try {
+    const session = await requireAuth();
+    if (session.user.role !== 'ADMIN') throw new Error("Forbidden");
+
+    await prisma.contentItem.delete({ where: { id: itemId } });
+    revalidatePath("/content");
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
 export async function createContentLog(formData: FormData) {
-  let planId = formData.get("planId") as string;
-  const type = formData.get("type") as string;
-  const scheduledDateStr = formData.get("scheduledDate") as string;
-  const notes = formData.get("notes") as string;
-  const clientId = formData.get("clientId") as string;
+  try {
+    const session = await requireAuth();
+    
+    let planId = formData.get("planId") as string;
+    const type = formData.get("type") as string;
+    const status = formData.get("status") as string || "PUBLISHED";
+    const scheduledDateStr = formData.get("scheduledDate") as string;
+    const notes = formData.get("notes") as string;
+    const clientId = formData.get("clientId") as string;
 
-  // If planId is missing, we need to find or create one for the current month
-  if (!planId && clientId) {
-    const client = await prisma.client.findUnique({
-      where: { id: clientId },
-      include: { packages: true }
-    });
-
-    const pkg = client?.packages[0];
-    if (pkg) {
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const year = now.getFullYear();
-
-      let plan = await prisma.monthlyPlan.findFirst({
-        where: { packageId: pkg.id, month, year }
+    if (!planId && clientId) {
+      const client = await prisma.client.findUnique({
+        where: { id: clientId },
+        include: { packages: true }
       });
 
-      if (!plan) {
-        plan = await prisma.monthlyPlan.create({
-          data: { packageId: pkg.id, month, year }
+      const pkg = client?.packages[0];
+      if (pkg) {
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const year = now.getFullYear();
+
+        let plan = await prisma.monthlyPlan.findFirst({
+          where: { packageId: pkg.id, month, year }
         });
+
+        if (!plan) {
+          plan = await prisma.monthlyPlan.create({
+            data: { packageId: pkg.id, month, year }
+          });
+        }
+        planId = plan.id;
       }
-      planId = plan.id;
     }
+
+    if (!planId) return { error: "No plan found" };
+
+    await prisma.contentItem.create({
+      data: {
+        planId,
+        type,
+        status,
+        scheduledDate: scheduledDateStr ? new Date(scheduledDateStr) : new Date(),
+        notes,
+        updatedById: session.user.id
+      }
+    });
+
+    revalidatePath("/content");
+    revalidatePath(`/content/${clientId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("CREATE_CONTENT_LOG_ERROR", error);
+    return { success: false };
   }
-
-  if (!planId) {
-    console.error("Cannot create content log: Missing Plan ID and no client package found.");
-    return;
-  }
-
-  await prisma.contentItem.create({
-    data: {
-      planId,
-      type,
-      status: "PUBLISHED",
-      scheduledDate: scheduledDateStr ? new Date(scheduledDateStr) : new Date(),
-      notes
-    }
-  });
-
-  revalidatePath("/content");
-  revalidatePath(`/content/${clientId}`);
 }

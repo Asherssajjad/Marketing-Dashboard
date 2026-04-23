@@ -25,6 +25,7 @@ model User {
   comments      TaskComment[]
   notifications Notification[]
   clientsCreated Client[]  @relation("CreatedClients")
+  contentUpdated ContentItem[] @relation("LastUpdatedBy")
 }
 
 model Client {
@@ -81,9 +82,11 @@ model ContentItem {
   notes         String?
   scheduledDate DateTime?
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime @default(now()) @updatedAt
+  updatedById   String?
   
   plan          MonthlyPlan @relation(fields: [planId], references: [id])
+  lastUpdatedBy User?       @relation("LastUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Project {
