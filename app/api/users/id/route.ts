@@ -16,7 +16,7 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { id } = params.id; // Corrected params access
+    const { id } = params;
 
     if (id === session.user.id) {
       return new NextResponse("You cannot delete yourself", { status: 400 });
@@ -55,6 +55,7 @@ export async function PATCH(
       role,
     };
 
+    // If password is provided, hash it
     if (password && password.length >= 6) {
       updateData.password = await bcrypt.hash(password, 10);
     }
