@@ -171,3 +171,12 @@ model Invoice {
   
   payment     Payment  @relation(fields: [paymentId], references: [id])
 }
+
+model AgencySettings {
+  id            String   @id @default("singleton")
+  agencyName    String   @default("AXION Marketing")
+  supportEmail  String   @default("ops@axion.com")
+  primaryColor  String   @default("#4F46E5")
+  logoUrl       String?
+  updatedAt     DateTime @updatedAt
+}
