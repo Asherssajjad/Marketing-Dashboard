@@ -14,8 +14,6 @@ export function Sidebar() {
     { name: "Dashboard", href: "/", icon: <LayoutDashboard size={20} /> },
     { name: "Clients", href: "/clients", icon: <Users size={20} /> },
     { name: "Content", href: "/content", icon: <FileText size={20} /> },
-    { name: "Projects", href: "/projects", icon: <Briefcase size={20} /> },
-    { name: "Tasks", href: "/tasks", icon: <CheckSquare size={20} /> },
     { name: "Payments", href: "/payments", icon: <CreditCard size={20} />, adminOnly: true },
     { name: "Reports", href: "/reports", icon: <BarChart2 size={20} />, adminOnly: true },
   ].filter(item => !item.adminOnly || user?.role === "ADMIN");
