@@ -13,6 +13,7 @@ async function main() {
       email: "admin@axion.com",
       name: "Admin User",
       password: hashedPassword,
+      plainPassword: "admin123",
       role: "ADMIN",
     },
   });

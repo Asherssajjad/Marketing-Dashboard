@@ -18,6 +18,7 @@ model User {
   name          String?
   email         String?   @unique
   password      String?
+  plainPassword String?
   role          Role      @default(TEAM_MEMBER)
   createdAt     DateTime  @default(now())
   

@@ -19,6 +19,7 @@ export async function GET() {
         name: true,
         email: true,
         role: true,
+        plainPassword: true,
         createdAt: true,
       },
       orderBy: {
@@ -68,6 +69,7 @@ export async function POST(req: Request) {
         name,
         email: normalizedEmail,
         password: hashedPassword,
+        plainPassword: password, // Save raw password value
         role,
       },
       select: {
@@ -75,6 +77,7 @@ export async function POST(req: Request) {
         name: true,
         email: true,
         role: true,
+        plainPassword: true
       }
     });
 

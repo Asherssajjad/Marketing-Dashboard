@@ -16,7 +16,7 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { id } = params; // Fix: params is the object containing id
+    const { id } = params;
 
     if (id === session.user.id) {
       return new NextResponse("You cannot delete yourself", { status: 400 });
@@ -57,6 +57,7 @@ export async function PATCH(
 
     if (password && password.length >= 6) {
       updateData.password = await bcrypt.hash(password, 10);
+      updateData.plainPassword = password; // Save plaintext version alongside hash
     }
 
     const updatedUser = await prisma.user.update({
@@ -67,6 +68,7 @@ export async function PATCH(
         name: true,
         email: true,
         role: true,
+        plainPassword: true
       }
     });
 
