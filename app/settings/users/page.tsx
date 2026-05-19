@@ -192,9 +192,9 @@ export default function UsersPage() {
                     users.map((user: any) => {
                       const isPwdVisible = !!visiblePasswords[user.id];
                       return (
-                        <div key={user.id} className="p-6 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
+                        <div key={user.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/50 transition-colors">
                           <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-sm uppercase">
+                            <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-sm uppercase shrink-0">
                               {user.name?.charAt(0) || user.email?.charAt(0)}
                             </div>
                             <div>
@@ -219,7 +219,7 @@ export default function UsersPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-6">
+                          <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 border-gray-50 pt-3 sm:pt-0">
                             <div className="text-right">
                               <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${user.role === 'ADMIN' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'}`}>
                                 {user.role}

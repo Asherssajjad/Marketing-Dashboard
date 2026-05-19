@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { LayoutDashboard, Users, FileText, Briefcase, CheckSquare, CreditCard, BarChart2, Settings, Zap, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Briefcase, CheckSquare, CreditCard, BarChart2, Settings, Zap, LogOut, X } from "lucide-react";
+import { useSidebar } from "@/components/LayoutWrapper";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
+  const { setIsOpen } = useSidebar();
 
   const mainNav = [
     { name: "Dashboard", href: "/", icon: <LayoutDashboard size={20} /> },
@@ -19,19 +21,29 @@ export function Sidebar() {
   ].filter(item => !item.adminOnly || user?.role === "ADMIN");
 
   return (
-    <aside className="w-[260px] bg-white border-r border-gray-100 flex flex-col shrink-0 shadow-sm z-20">
-      {/* Logo */}
-      <div className="h-20 flex items-center px-6 gap-3">
-        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
-          <Zap size={18} fill="currentColor" />
+    <aside className="w-[260px] h-full bg-white border-r border-gray-100 flex flex-col shrink-0 shadow-sm z-20">
+      {/* Logo Section */}
+      <div className="h-20 flex items-center justify-between px-6 border-b border-gray-50 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+            <Zap size={18} fill="currentColor" />
+          </div>
+          <div>
+            <h1 className="font-bold text-xl text-gray-900 leading-tight">AXION</h1>
+            <p className="text-[10px] text-gray-500 font-medium tracking-wide uppercase">SaaS Platform</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-xl text-gray-900 leading-tight">AXION</h1>
-          <p className="text-[10px] text-gray-500 font-medium tracking-wide uppercase">SaaS Platform</p>
-        </div>
+        {/* Mobile Close Button */}
+        <button 
+          onClick={() => setIsOpen(false)}
+          className="lg:hidden p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
+          aria-label="Close sidebar"
+        >
+          <X size={18} />
+        </button>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation Links */}
       <div className="flex-1 py-6 px-4 flex flex-col gap-1 overflow-y-auto">
         {mainNav.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
@@ -39,6 +51,7 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={() => setIsOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm
                 ${isActive 
                   ? "bg-indigo-50 text-indigo-600" 
@@ -55,10 +68,11 @@ export function Sidebar() {
       </div>
 
       {/* Bottom Actions */}
-      <div className="p-4 border-t border-gray-100 space-y-2">
+      <div className="p-4 border-t border-gray-100 space-y-2 shrink-0">
         {user?.role === "ADMIN" && (
           <Link
             href="/settings"
+            onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-all font-medium text-sm"
           >
             <Settings size={20} className="text-gray-400" />
@@ -66,7 +80,10 @@ export function Sidebar() {
           </Link>
         )}
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => {
+            setIsOpen(false);
+            signOut({ callbackUrl: "/login" });
+          }}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-medium text-sm"
         >
           <LogOut size={20} className="text-gray-400 group-hover:text-rose-600" />

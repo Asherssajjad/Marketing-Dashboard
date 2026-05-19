@@ -170,7 +170,7 @@ export default function SettingsPage() {
         <div className="max-w-[1100px] mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
-            <div className="lg:col-span-1 space-y-1">
+            <div className="lg:col-span-1 flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-1 pb-3 lg:pb-0 shrink-0 select-none">
               <SettingsNavButton icon={<Building2 size={18}/>} label="Agency Profile" active={activeTab === "agency"} onClick={() => setActiveTab("agency")} />
               <SettingsNavButton icon={<UserIcon size={18}/>} label="Team Members" active={activeTab === "team"} onClick={() => setActiveTab("team")} />
               <SettingsNavButton icon={<Shield size={18}/>} label="Security & Access" active={activeTab === "security"} onClick={() => setActiveTab("security")} />
@@ -264,12 +264,12 @@ export default function SettingsPage() {
                              {isLoading ? (
                                <div className="p-12 text-center flex flex-col items-center gap-2"><Loader2 className="animate-spin text-indigo-600" size={24}/></div>
                              ) : users.map((user) => (
-                               <div key={user.id} className="p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
+                               <div key={user.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-gray-50/50 transition-colors">
                                   <div className="flex items-center gap-3">
-                                     <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xs uppercase">{user.name?.charAt(0)}</div>
+                                     <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xs uppercase shrink-0">{user.name?.charAt(0)}</div>
                                      <div><p className="text-sm font-bold text-gray-900">{user.name}</p><p className="text-[10px] text-gray-400 font-medium">{user.email}</p></div>
                                   </div>
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 border-gray-50 pt-2 sm:pt-0">
                                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${user.role === 'ADMIN' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'}`}>{user.role}</span>
                                     <button onClick={() => {setEditingUser(user); setUserFormData({name: user.name||"", email: user.email||"", password: "", role: user.role})}} className="text-gray-300 hover:text-indigo-600 transition-colors p-1"><Edit2 size={16}/></button>
                                   </div>
@@ -367,7 +367,7 @@ export default function SettingsPage() {
 
 function SettingsNavButton({ icon, label, active, onClick }: NavButtonProps) {
   return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-500 hover:bg-gray-100'}`}>
+    <button onClick={onClick} className={`whitespace-nowrap lg:w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all shrink-0 ${active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-gray-500 hover:bg-gray-100'}`}>
        {icon} {label}
     </button>
   );

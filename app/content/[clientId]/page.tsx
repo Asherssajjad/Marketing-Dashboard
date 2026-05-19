@@ -108,17 +108,21 @@ export default async function ClientContentPage({ params, searchParams }: Client
             {/* Calendar Grid Section */}
             <div className="lg:col-span-3">
                <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="grid grid-cols-7 bg-gray-50/50 border-b border-gray-100">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                      <div key={day} className="px-4 py-4 text-[10px] font-black tracking-widest text-gray-400 uppercase text-center border-r last:border-0 border-gray-100">{day}</div>
-                    ))}
-                  </div>
-                  
-                  <CalendarGrid 
-                    itemsByDate={itemsByDate} 
-                    currentMonth={currentMonth} 
-                    currentYear={currentYear} 
-                  />
+                 <div className="overflow-x-auto">
+                   <div className="min-w-[750px]">
+                      <div className="grid grid-cols-7 bg-gray-50/50 border-b border-gray-100">
+                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                          <div key={day} className="px-4 py-4 text-[10px] font-black tracking-widest text-gray-400 uppercase text-center border-r last:border-0 border-gray-100">{day}</div>
+                        ))}
+                      </div>
+                      
+                      <CalendarGrid 
+                        itemsByDate={itemsByDate} 
+                        currentMonth={currentMonth} 
+                        currentYear={currentYear} 
+                      />
+                   </div>
+                 </div>
                </div>
             </div>
 

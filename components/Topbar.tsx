@@ -1,29 +1,43 @@
-import { Bell, Search } from "lucide-react";
+"use client";
+
+import { Bell, Search, Menu } from "lucide-react";
+import { useSidebar } from "@/components/LayoutWrapper";
 
 export function Topbar({ title, breadcrumb }: { title: string, breadcrumb?: string }) {
+  const { setIsOpen } = useSidebar();
+
   return (
-    <header className="h-[72px] bg-white border-b border-gray-100 px-8 flex items-center justify-between shrink-0 z-10 w-full">
-      {/* Left side: Breadcrumbs */}
-      <div className="flex items-center text-sm font-medium">
-        {breadcrumb ? (
-          <>
-            <span className="text-gray-400">{breadcrumb}</span>
-            <span className="text-gray-400 mx-2">›</span>
-            <span className="text-gray-900 font-bold">{title}</span>
-          </>
-        ) : (
-          <span className="text-gray-900 font-bold text-lg">{title}</span>
-        )}
+    <header className="h-[72px] bg-white border-b border-gray-100 px-4 md:px-8 flex items-center justify-between shrink-0 z-10 w-full">
+      {/* Left side: Mobile menu toggle and Title/Breadcrumbs */}
+      <div className="flex items-center gap-3 text-sm font-medium">
+        <button 
+          onClick={() => setIsOpen(true)}
+          className="lg:hidden p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-50 rounded-xl transition-all"
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+        <div className="flex items-center text-sm font-medium">
+          {breadcrumb ? (
+            <>
+              <span className="text-gray-400 hidden sm:inline">{breadcrumb}</span>
+              <span className="text-gray-400 mx-2 hidden sm:inline">›</span>
+              <span className="text-gray-900 font-bold">{title}</span>
+            </>
+          ) : (
+            <span className="text-gray-900 font-bold text-lg">{title}</span>
+          )}
+        </div>
       </div>
 
       {/* Right side: Actions */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 md:gap-6">
         <div className="relative hidden md:block group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
           <input 
             type="text" 
             placeholder="Search clients, projects or IDs..." 
-            className="pl-10 pr-4 py-2 bg-gray-50/50 border border-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 focus:bg-white transition-all w-[300px]"
+            className="pl-10 pr-4 py-2 bg-gray-50/50 border border-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 focus:bg-white transition-all w-[240px] lg:w-[300px]"
           />
         </div>
         
@@ -32,8 +46,8 @@ export function Topbar({ title, breadcrumb }: { title: string, breadcrumb?: stri
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
         </button>
         
-        <div className="flex items-center gap-3 border-l border-gray-100 pl-6">
-          <div className="flex flex-col text-right">
+        <div className="flex items-center gap-3 border-l border-gray-100 pl-4 md:pl-6">
+          <div className="flex flex-col text-right hidden sm:flex">
             <span className="text-sm font-bold text-gray-900 leading-tight">Admin User</span>
             <span className="text-xs text-gray-400 font-medium">Super Admin</span>
           </div>
