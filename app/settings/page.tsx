@@ -32,7 +32,7 @@ interface NavButtonProps {
 }
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const currentUser = session?.user;
   
   const [activeTab, setActiveTab] = useState("agency");
@@ -62,6 +62,30 @@ export default function SettingsPage() {
     password: "",
     role: "TEAM_MEMBER"
   });
+
+  if (status === "loading") {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50/30">
+        <Loader2 className="animate-spin text-indigo-600" size={24} />
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated" || !currentUser || currentUser.role !== "ADMIN") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50/30">
+        <div className="text-center max-w-sm space-y-4">
+          <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
+            <Shield size={28} />
+          </div>
+          <h2 className="text-lg font-black text-gray-900 uppercase tracking-wider">Access Denied</h2>
+          <p className="text-sm text-gray-500 font-medium leading-relaxed">
+            Administrative permissions are required to access platform settings.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Fetch Settings & Users
   const fetchData = useCallback(async () => {

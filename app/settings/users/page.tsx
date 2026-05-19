@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import { Topbar } from "@/components/Topbar";
 import { Plus, UserPlus, Trash2, Shield, Mail, Loader2, Eye, EyeOff, Key } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function UsersPage() {
+  const { data: session, status } = useSession();
+  const currentUser = session?.user;
+
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -17,6 +21,30 @@ export default function UsersPage() {
     password: "",
     role: "TEAM_MEMBER"
   });
+
+  if (status === "loading") {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50/30">
+        <Loader2 className="animate-spin text-indigo-600" size={24} />
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated" || !currentUser || currentUser.role !== "ADMIN") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50/30">
+        <div className="text-center max-w-sm space-y-4">
+          <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
+            <Shield size={28} />
+          </div>
+          <h2 className="text-lg font-black text-gray-900 uppercase tracking-wider">Access Denied</h2>
+          <p className="text-sm text-gray-500 font-medium leading-relaxed">
+            Administrative permissions are required to access platform settings.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     fetchUsers();

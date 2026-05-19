@@ -56,13 +56,15 @@ export function Sidebar() {
 
       {/* Bottom Actions */}
       <div className="p-4 border-t border-gray-100 space-y-2">
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-all font-medium text-sm"
-        >
-          <Settings size={20} className="text-gray-400" />
-          Settings
-        </Link>
+        {user?.role === "ADMIN" && (
+          <Link
+            href="/settings"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-all font-medium text-sm"
+          >
+            <Settings size={20} className="text-gray-400" />
+            Settings
+          </Link>
+        )}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-medium text-sm"
