@@ -2,6 +2,7 @@ import { Topbar } from "@/components/Topbar";
 import { updateClient, deleteClient } from "@/app/actions/clients";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
+import { DeleteClientButton } from "@/components/DeleteClientButton";
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -164,17 +165,7 @@ export default async function EditClientPage({ params }: EditClientProps) {
                 <p className="text-xs text-gray-500 font-medium mt-1">Permanently remove this client, their active packages, monthly content schedules, and invoices.</p>
               </div>
               <form action={deleteClientWithId} className="w-full sm:w-auto flex justify-end">
-                <button 
-                  type="submit" 
-                  onClick={(e) => {
-                    if (!confirm("Are you sure you want to permanently delete this client? This will delete all their contents, plans and billing invoices. This action cannot be undone.")) {
-                      e.preventDefault();
-                    }
-                  }}
-                  className="w-full sm:w-auto px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-md shadow-rose-100 text-center"
-                >
-                  Delete Client
-                </button>
+                <DeleteClientButton clientName={client.name} />
               </form>
             </div>
           </div>
