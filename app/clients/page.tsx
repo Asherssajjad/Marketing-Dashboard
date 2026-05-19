@@ -2,8 +2,13 @@ import { Topbar } from "@/components/Topbar";
 import { Eye, Edit2, Globe, DollarSign, CheckCircle2, UserPlus } from "lucide-react";
 import { getClients } from "@/app/actions/clients";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export default async function ClientsPage() {
+  const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.role === "ADMIN";
+
   const clients = await getClients();
 
   // Summing ALL packages for ALL clients to determine true portfolio value
@@ -33,9 +38,11 @@ export default async function ClientsPage() {
               <h1 className="text-2xl font-black text-gray-900 tracking-tight">Client Portfolio</h1>
               <p className="text-sm text-gray-500 font-medium">Manage and track your active agency partnerships.</p>
             </div>
-            <Link href="/clients/new" className="bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-6 rounded-xl tracking-widest text-[10px] uppercase transition-all shadow-lg shadow-indigo-100 flex items-center gap-2">
-              <UserPlus size={16} /> Add New Client
-            </Link>
+            {isAdmin && (
+              <Link href="/clients/new" className="bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-6 rounded-xl tracking-widest text-[10px] uppercase transition-all shadow-lg shadow-indigo-100 flex items-center gap-2">
+                <UserPlus size={16} /> Add New Client
+              </Link>
+            )}
           </div>
 
           <div className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
@@ -48,7 +55,7 @@ export default async function ClientsPage() {
                     <th className="px-8 py-5">Active Plan</th>
                     <th className="px-8 py-5 text-center">Engagement</th>
                     <th className="px-8 py-5 text-center">Status</th>
-                    <th className="px-8 py-5 text-right">Actions</th>
+                    {isAdmin && <th className="px-8 py-5 text-right">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -103,24 +110,26 @@ export default async function ClientsPage() {
                                 {client.status}
                               </span>
                             </td>
-                            <td className="px-8 py-5 text-right">
-                              <div className="flex items-center justify-end gap-2.5">
-                                <Link 
-                                  href={`/clients/${client.id}/edit`} 
-                                  className="p-2 text-gray-400 hover:text-indigo-600 hover:border-indigo-100 bg-white rounded-lg shadow-sm border border-gray-100 transition-all"
-                                  title="View Details"
-                                >
-                                  <Eye size={16} />
-                                </Link>
-                                <Link 
-                                  href={`/clients/${client.id}/edit`} 
-                                  className="p-2 text-gray-400 hover:text-indigo-600 hover:border-indigo-100 bg-white rounded-lg shadow-sm border border-gray-100 transition-all"
-                                  title="Edit Client"
-                                >
-                                  <Edit2 size={16} />
-                                </Link>
-                              </div>
-                            </td>
+                            {isAdmin && (
+                              <td className="px-8 py-5 text-right">
+                                <div className="flex items-center justify-end gap-2.5">
+                                  <Link 
+                                    href={`/clients/${client.id}/edit`} 
+                                    className="p-2 text-gray-400 hover:text-indigo-600 hover:border-indigo-100 bg-white rounded-lg shadow-sm border border-gray-100 transition-all"
+                                    title="View Details"
+                                  >
+                                    <Eye size={16} />
+                                  </Link>
+                                  <Link 
+                                    href={`/clients/${client.id}/edit`} 
+                                    className="p-2 text-gray-400 hover:text-indigo-600 hover:border-indigo-100 bg-white rounded-lg shadow-sm border border-gray-100 transition-all"
+                                    title="Edit Client"
+                                  >
+                                    <Edit2 size={16} />
+                                  </Link>
+                                </div>
+                              </td>
+                            )}
                          </tr>
                       )
                     })
@@ -130,8 +139,10 @@ export default async function ClientsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-12">
-            <StatSmall label="Portfolio Value" value={totalRevenue.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })} icon={<DollarSign size={18}/>} color="text-emerald-600" bgColor="bg-emerald-50" />
+          <div className={`grid grid-cols-1 ${isAdmin ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6 pb-12`}>
+            {isAdmin && (
+              <StatSmall label="Portfolio Value" value={totalRevenue.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })} icon={<DollarSign size={18}/>} color="text-emerald-600" bgColor="bg-emerald-50" />
+            )}
             <StatSmall label="Channels Managed" value={totalPlatformsCount.toString()} icon={<Globe size={18}/>} color="text-indigo-600" bgColor="bg-indigo-50" />
             <StatSmall label="Client Retention" value="98%" icon={<CheckCircle2 size={18}/>} color="text-amber-600" bgColor="bg-amber-50" />
           </div>

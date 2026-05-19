@@ -18,6 +18,10 @@ export default async function EditClientPage({ params }: EditClientProps) {
     redirect("/login");
   }
 
+  if (session.user.role !== "ADMIN") {
+    redirect("/clients");
+  }
+
   // Fetch client by ID
   const client = await prisma.client.findUnique({
     where: { id: params.id },

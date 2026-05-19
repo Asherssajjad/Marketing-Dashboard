@@ -14,19 +14,27 @@ async function requireAuth() {
 export async function getContentTrackers() {
   try {
     await requireAuth();
+    
+    // Fetch all client trackers with their current month's plan
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
     return prisma.client.findMany({
       include: {
         packages: {
           include: {
             monthlyPlans: {
+              where: {
+                month: currentMonth,
+                year: currentYear
+              },
               include: {
                 contentItems: {
                   include: { lastUpdatedBy: { select: { name: true } } },
                   orderBy: { createdAt: 'desc' }
                 }
-              },
-              orderBy: { createdAt: 'desc' },
-              take: 1
+              }
             }
           }
         }
@@ -37,23 +45,31 @@ export async function getContentTrackers() {
   }
 }
 
-export async function getClientContent(clientId: string) {
+export async function getClientContent(clientId: string, month?: number, year?: number) {
   try {
     await requireAuth();
+
+    // Default to the current month & year if not provided
+    const now = new Date();
+    const queryMonth = month !== undefined ? month : (now.getMonth() + 1);
+    const queryYear = year !== undefined ? year : now.getFullYear();
+
     return prisma.client.findUnique({
       where: { id: clientId },
       include: {
         packages: {
           include: {
             monthlyPlans: {
+              where: {
+                month: queryMonth,
+                year: queryYear
+              },
               include: {
                 contentItems: {
                   include: { lastUpdatedBy: { select: { name: true } } },
                   orderBy: { scheduledDate: 'asc' }
                 }
-              },
-              orderBy: { createdAt: 'desc' },
-              take: 1
+              }
             }
           }
         }
@@ -110,6 +126,11 @@ export async function createContentLog(formData: FormData) {
     const notes = formData.get("notes") as string;
     const clientId = formData.get("clientId") as string;
 
+    const scheduledDate = scheduledDateStr ? new Date(scheduledDateStr) : new Date();
+    // Derive plan month (1-12) and year dynamically from scheduledDate
+    const month = scheduledDate.getMonth() + 1;
+    const year = scheduledDate.getFullYear();
+
     if (!planId && clientId) {
       const client = await prisma.client.findUnique({
         where: { id: clientId },
@@ -118,10 +139,6 @@ export async function createContentLog(formData: FormData) {
 
       const pkg = client?.packages[0];
       if (pkg) {
-        const now = new Date();
-        const month = now.getMonth() + 1;
-        const year = now.getFullYear();
-
         let plan = await prisma.monthlyPlan.findFirst({
           where: { packageId: pkg.id, month, year }
         });
@@ -142,7 +159,7 @@ export async function createContentLog(formData: FormData) {
         planId,
         type,
         status,
-        scheduledDate: scheduledDateStr ? new Date(scheduledDateStr) : new Date(),
+        scheduledDate,
         notes,
         updatedById: session.user.id
       }

@@ -5,8 +5,13 @@ import Link from "next/link";
 import { StatCard } from "@/components/DashboardComponents";
 import { DashboardStats } from "@/types/dashboard";
 import ErrorRetry from "@/components/ErrorRetry";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.role === "ADMIN";
+
   let stats: DashboardStats | null = null;
   let errorMsg: string | null = null;
 
@@ -57,8 +62,8 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Quick Stats Grid - Two Clean Column Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Quick Stats Grid - Admins get Revenue, Team Members only see Active Clients */}
+          <div className={`grid grid-cols-1 ${isAdmin ? 'md:grid-cols-2' : 'max-w-[640px]'} gap-6`}>
             <StatCard 
                label="ACTIVE CLIENTS" 
                value={stats.clientCount.toString()} 
@@ -67,18 +72,20 @@ export default async function DashboardPage() {
                color="text-indigo-600" 
                bgColor="bg-indigo-50"
             />
-            <StatCard 
-               label="MONTHLY REVENUE" 
-               value={stats.totalRevenue.toLocaleString("en-US", {
-                 style: "currency",
-                 currency: "USD",
-                 maximumFractionDigits: 0
-               })} 
-               trend="Gross" 
-               icon={<DollarSign size={20} />} 
-               color="text-emerald-600" 
-               bgColor="bg-emerald-50"
-            />
+            {isAdmin && (
+              <StatCard 
+                 label="MONTHLY REVENUE" 
+                 value={stats.totalRevenue.toLocaleString("en-US", {
+                   style: "currency",
+                   currency: "USD",
+                   maximumFractionDigits: 0
+                 })} 
+                 trend="Gross" 
+                 icon={<DollarSign size={20} />} 
+                 color="text-emerald-600" 
+                 bgColor="bg-emerald-50"
+              />
+            )}
           </div>
 
           {/* Workspace Quick Links Section */}
@@ -128,11 +135,18 @@ export default async function DashboardPage() {
             <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Platform Analytics</p>
-                <p className="text-sm text-gray-700 font-medium">To view invoicing summaries, revenue breakdowns, and reports, navigate to payments.</p>
+                <p className="text-sm text-gray-700 font-medium">
+                  {isAdmin 
+                    ? "To view invoicing summaries, revenue breakdowns, and reports, navigate to payments."
+                    : "Access to payment and revenue reports is restricted to administrative accounts."
+                  }
+                </p>
               </div>
-              <Link href="/payments" className="px-4 py-2 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold rounded-xl text-xs flex items-center gap-2 transition-all shrink-0">
-                <BarChart2 size={16} /> Reports & Payments
-              </Link>
+              {isAdmin && (
+                <Link href="/payments" className="px-4 py-2 border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold rounded-xl text-xs flex items-center gap-2 transition-all shrink-0">
+                  <BarChart2 size={16} /> Reports & Payments
+                </Link>
+              )}
             </div>
 
           </div>
