@@ -141,7 +141,7 @@ export default async function ClientsPage() {
 
           <div className={`grid grid-cols-1 ${isAdmin ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6 pb-12`}>
             {isAdmin && (
-              <StatSmall label="Portfolio Value" value={totalRevenue.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })} icon={<DollarSign size={18}/>} color="text-emerald-600" bgColor="bg-emerald-50" />
+              <StatSmall label="Portfolio Value" value={`Rs. ${totalRevenue.toLocaleString()}`} icon={<DollarSign size={18}/>} color="text-emerald-600" bgColor="bg-emerald-50" />
             )}
             <StatSmall label="Channels Managed" value={totalPlatformsCount.toString()} icon={<Globe size={18}/>} color="text-indigo-600" bgColor="bg-indigo-50" />
             <StatSmall label="Client Retention" value="98%" icon={<CheckCircle2 size={18}/>} color="text-amber-600" bgColor="bg-amber-50" />

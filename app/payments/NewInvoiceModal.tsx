@@ -116,7 +116,7 @@ export default function NewInvoiceModal({ clients }: NewInvoiceModalProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="amount" className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount ($)</label>
+                <label htmlFor="amount" className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount (PKR)</label>
                 <input 
                   id="amount"
                   name="amount" 

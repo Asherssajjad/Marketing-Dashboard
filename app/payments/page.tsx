@@ -135,10 +135,10 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
 
           {/* Financial Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <FinancialStat label="GLOBAL PENDING" value={`$${totalPending.toLocaleString()}`} icon={<Clock size={18}/>} color="text-amber-600" bgColor="bg-amber-50" />
-            <FinancialStat label={`COLLECTED (${currentMonthName.slice(0,3).toUpperCase()})`} value={`$${collectedMTD.toLocaleString()}`} icon={<CheckCircle2 size={18}/>} color="text-emerald-600" bgColor="bg-emerald-50" />
-            <FinancialStat label="GLOBAL OVERDUE" value={`$${overdueAmount.toLocaleString()}`} icon={<AlertTriangle size={18}/>} color="text-rose-600" bgColor="bg-rose-50" />
-            <FinancialStat label={`PROJECTED (${currentMonthName.slice(0,3).toUpperCase()})`} value={`$${projectedMTD.toLocaleString()}`} icon={<DollarSign size={18}/>} color="text-indigo-600" bgColor="bg-indigo-50" />
+            <FinancialStat label="GLOBAL PENDING" value={`Rs. ${totalPending.toLocaleString()}`} icon={<Clock size={18}/>} color="text-amber-600" bgColor="bg-amber-50" />
+            <FinancialStat label={`COLLECTED (${currentMonthName.slice(0,3).toUpperCase()})`} value={`Rs. ${collectedMTD.toLocaleString()}`} icon={<CheckCircle2 size={18}/>} color="text-emerald-600" bgColor="bg-emerald-50" />
+            <FinancialStat label="GLOBAL OVERDUE" value={`Rs. ${overdueAmount.toLocaleString()}`} icon={<AlertTriangle size={18}/>} color="text-rose-600" bgColor="bg-rose-50" />
+            <FinancialStat label={`PROJECTED (${currentMonthName.slice(0,3).toUpperCase()})`} value={`Rs. ${projectedMTD.toLocaleString()}`} icon={<DollarSign size={18}/>} color="text-indigo-600" bgColor="bg-indigo-50" />
           </div>
 
           {/* Invoices List Table */}
@@ -221,7 +221,7 @@ function PaymentRow({ payment }: PaymentRowProps) {
         <span className="text-sm font-bold text-gray-600">{payment.client?.name || "Unknown Client"}</span>
       </td>
       <td className="px-6 py-4">
-        <span className="text-sm font-black text-gray-900">${Number(payment.amount).toLocaleString()}</span>
+        <span className="text-sm font-black text-gray-900">Rs. {Number(payment.amount).toLocaleString()}</span>
       </td>
       <td className="px-6 py-4">
         <span className="text-xs font-bold text-gray-400 uppercase">

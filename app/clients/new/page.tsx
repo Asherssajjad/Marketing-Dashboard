@@ -44,7 +44,7 @@ export default function NewClientPage() {
                   <input name="package" required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Premium Content Engine" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Monthly Price ($)</label>
+                  <label className="text-sm font-semibold text-gray-700">Monthly Price (PKR)</label>
                   <input name="price" type="number" step="0.01" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="1500" />
                 </div>
                 <div className="space-y-2">

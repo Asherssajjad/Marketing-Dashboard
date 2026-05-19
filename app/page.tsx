@@ -75,11 +75,7 @@ export default async function DashboardPage() {
             {isAdmin && (
               <StatCard 
                  label="MONTHLY REVENUE" 
-                 value={stats.totalRevenue.toLocaleString("en-US", {
-                   style: "currency",
-                   currency: "USD",
-                   maximumFractionDigits: 0
-                 })} 
+                 value={`Rs. ${stats.totalRevenue.toLocaleString()}`} 
                  trend="Gross" 
                  icon={<DollarSign size={20} />} 
                  color="text-emerald-600" 

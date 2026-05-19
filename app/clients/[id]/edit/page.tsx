@@ -114,7 +114,7 @@ export default async function EditClientPage({ params }: EditClientProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Monthly Price ($)</label>
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Monthly Price (PKR)</label>
                   <input 
                     name="price" 
                     type="number" 
