@@ -68,7 +68,7 @@ export async function getDashboardSummary(): Promise<DashboardStats> {
   });
 
   return {
-    userName: session.user.name,
+    userName: session.user.name ?? null,
     clientCount,
     projectCount,
     overdueTasks,
