@@ -1,8 +1,9 @@
 import { Topbar } from "@/components/Topbar";
-import { DollarSign, CheckCircle2, AlertTriangle, FileText, ArrowRight, Clock } from "lucide-react";
+import { DollarSign, CheckCircle2, AlertTriangle, FileText, ArrowRight, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { getPayments, updatePaymentStatus } from "@/app/actions/payments";
 import { getClients } from "@/app/actions/clients";
 import NewInvoiceModal from "./NewInvoiceModal";
+import Link from "next/link";
 
 interface FinancialStatProps {
   label: string;
@@ -16,7 +17,14 @@ interface PaymentRowProps {
   payment: any;
 }
 
-export default async function PaymentsPage() {
+interface PaymentsPageProps {
+  searchParams: {
+    month?: string;
+    year?: string;
+  };
+}
+
+export default async function PaymentsPage({ searchParams }: PaymentsPageProps) {
   let payments: any[] = [];
   let clients: any[] = [];
   let error: string | null = null;
@@ -33,29 +41,65 @@ export default async function PaymentsPage() {
     error = "Unable to load financial data. Please ensure you have administrative permissions.";
   }
 
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
+  // Parse selected month & year (defaulting to current date if not defined)
+  const now = new Date();
+  const currentMonth = searchParams.month ? parseInt(searchParams.month) : (now.getMonth() + 1); // 1-12
+  const currentYear = searchParams.year ? parseInt(searchParams.year) : now.getFullYear();
 
   // Helper for Decimal arithmetic
   const getAmount = (p: any) => Number(p.amount) || 0;
 
+  // Global receivables tracking
   const totalPending = payments
     .filter(p => p.status === 'PENDING')
-    .reduce((sum, p) => sum + getAmount(p), 0);
-
-  const collectedMTD = payments
-    .filter(p => p.status === 'PAID' && p.month === currentMonth && p.year === currentYear)
     .reduce((sum, p) => sum + getAmount(p), 0);
     
   const overdueAmount = payments
     .filter(p => p.status === 'OVERDUE')
     .reduce((sum, p) => sum + getAmount(p), 0);
 
+  // Period specific billing calculations (MTD)
+  const collectedMTD = payments
+    .filter(p => p.status === 'PAID' && p.month === currentMonth && p.year === currentYear)
+    .reduce((sum, p) => sum + getAmount(p), 0);
+
+  const pendingMTD = payments
+    .filter(p => p.status === 'PENDING' && p.month === currentMonth && p.year === currentYear)
+    .reduce((sum, p) => sum + getAmount(p), 0);
+
+  const projectedMTD = collectedMTD + pendingMTD;
+
+  // Filter list of payments to only show invoices belonging to the selected month & year
+  const monthlyPayments = payments.filter(
+    p => p.month === currentMonth && p.year === currentYear
+  );
+
+  // Month navigation logic
+  let prevMonth = currentMonth - 1;
+  let prevYear = currentYear;
+  if (prevMonth < 1) {
+    prevMonth = 12;
+    prevYear -= 1;
+  }
+
+  let nextMonth = currentMonth + 1;
+  let nextYear = currentYear;
+  if (nextMonth > 12) {
+    nextMonth = 1;
+    nextYear += 1;
+  }
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const currentMonthName = monthNames[currentMonth - 1];
+
   return (
     <>
       <Topbar title="Financials & Invoicing" breadcrumb="Payments" />
 
-      <div className="flex-1 overflow-auto p-4 md:p-8">
+      <div className="flex-1 overflow-auto p-4 md:p-8 bg-gray-50/30">
         <div className="max-w-[1280px] mx-auto space-y-8">
           
           {error && (
@@ -65,22 +109,48 @@ export default async function PaymentsPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <FinancialStat label="TOTAL PENDING" value={`$${totalPending.toLocaleString()}`} icon={<Clock size={18}/>} color="text-amber-600" bgColor="bg-amber-50" />
-            <FinancialStat label="COLLECTED (MTD)" value={`$${collectedMTD.toLocaleString()}`} icon={<CheckCircle2 size={18}/>} color="text-emerald-600" bgColor="bg-emerald-50" />
-            <FinancialStat label="OVERDUE" value={`$${overdueAmount.toLocaleString()}`} icon={<AlertTriangle size={18}/>} color="text-rose-600" bgColor="bg-rose-50" />
-            <FinancialStat label="PROJECTED" value={`$${(totalPending + collectedMTD).toLocaleString()}`} icon={<DollarSign size={18}/>} color="text-indigo-600" bgColor="bg-indigo-50" />
+          {/* Period Header Controls */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">
+                Billing Period — {currentMonthName} {currentYear}
+              </h2>
+              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Reviewing invoice entries and receivables</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link 
+                href={`/payments?month=${prevMonth}&year=${prevYear}`}
+                className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:text-indigo-600 hover:border-indigo-100 flex items-center gap-1.5 transition-all shadow-sm"
+              >
+                <ChevronLeft size={16} /> Prev Month
+              </Link>
+              <Link 
+                href={`/payments?month=${nextMonth}&year=${nextYear}`}
+                className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:text-indigo-600 hover:border-indigo-100 flex items-center gap-1.5 transition-all shadow-sm"
+              >
+                Next Month <ChevronRight size={16} />
+              </Link>
+            </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {/* Financial Metrics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <FinancialStat label="GLOBAL PENDING" value={`$${totalPending.toLocaleString()}`} icon={<Clock size={18}/>} color="text-amber-600" bgColor="bg-amber-50" />
+            <FinancialStat label={`COLLECTED (${currentMonthName.slice(0,3).toUpperCase()})`} value={`$${collectedMTD.toLocaleString()}`} icon={<CheckCircle2 size={18}/>} color="text-emerald-600" bgColor="bg-emerald-50" />
+            <FinancialStat label="GLOBAL OVERDUE" value={`$${overdueAmount.toLocaleString()}`} icon={<AlertTriangle size={18}/>} color="text-rose-600" bgColor="bg-rose-50" />
+            <FinancialStat label={`PROJECTED (${currentMonthName.slice(0,3).toUpperCase()})`} value={`$${projectedMTD.toLocaleString()}`} icon={<DollarSign size={18}/>} color="text-indigo-600" bgColor="bg-indigo-50" />
+          </div>
+
+          {/* Invoices List Table */}
+          <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">Invoices & Billing</h3>
+              <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">Invoices for {currentMonthName} {currentYear}</h3>
               <NewInvoiceModal clients={clients} />
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50/50">
+                  <tr className="bg-gray-50/50 border-b border-gray-100">
                     <th className="px-6 py-4 text-[10px] font-black tracking-widest text-gray-400 uppercase">Invoice #</th>
                     <th className="px-6 py-4 text-[10px] font-black tracking-widest text-gray-400 uppercase">Client</th>
                     <th className="px-6 py-4 text-[10px] font-black tracking-widest text-gray-400 uppercase">Amount</th>
@@ -90,14 +160,14 @@ export default async function PaymentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {payments.length === 0 ? (
+                  {monthlyPayments.length === 0 ? (
                     <tr>
-                       <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic font-medium">
-                         {error ? "No data available." : "No financial records found."}
+                       <td colSpan={6} className="px-6 py-16 text-center text-gray-400 italic font-medium">
+                         No financial entries recorded for {currentMonthName} {currentYear}.
                        </td>
                     </tr>
                   ) : (
-                    payments.map((p) => (
+                    monthlyPayments.map((p) => (
                       <PaymentRow key={p.id} payment={p} />
                     ))
                   )}

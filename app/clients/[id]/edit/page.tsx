@@ -1,5 +1,5 @@
 import { Topbar } from "@/components/Topbar";
-import { updateClient } from "@/app/actions/clients";
+import { updateClient, deleteClient } from "@/app/actions/clients";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
@@ -34,6 +34,7 @@ export default async function EditClientPage({ params }: EditClientProps) {
 
   const activePackage = client.packages[0];
   const updateClientWithId = updateClient.bind(null, client.id);
+  const deleteClientWithId = deleteClient.bind(null, client.id);
 
   return (
     <>
@@ -154,6 +155,29 @@ export default async function EditClientPage({ params }: EditClientProps) {
             </div>
             
           </form>
+
+          {/* Danger Zone */}
+          <div className="mt-12 pt-8 border-t border-rose-100/60">
+            <div className="bg-rose-50/30 rounded-3xl border border-rose-100 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xs font-black text-rose-600 uppercase tracking-widest">Danger Zone</h3>
+                <p className="text-xs text-gray-500 font-medium mt-1">Permanently remove this client, their active packages, monthly content schedules, and invoices.</p>
+              </div>
+              <form action={deleteClientWithId} className="w-full sm:w-auto flex justify-end">
+                <button 
+                  type="submit" 
+                  onClick={(e) => {
+                    if (!confirm("Are you sure you want to permanently delete this client? This will delete all their contents, plans and billing invoices. This action cannot be undone.")) {
+                      e.preventDefault();
+                    }
+                  }}
+                  className="w-full sm:w-auto px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-md shadow-rose-100 text-center"
+                >
+                  Delete Client
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </>

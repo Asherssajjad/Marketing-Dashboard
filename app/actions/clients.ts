@@ -135,3 +135,76 @@ export async function updateClient(clientId: string, formData: FormData) {
 
   redirect("/clients");
 }
+
+export async function deleteClient(clientId: string) {
+  try {
+    await requireAdmin();
+
+    // 1. Get package IDs
+    const packages = await prisma.package.findMany({
+      where: { clientId },
+      select: { id: true }
+    });
+    const packageIds = packages.map(p => p.id);
+
+    // 2. Get monthly plans for these packages
+    const monthlyPlans = await prisma.monthlyPlan.findMany({
+      where: { packageId: { in: packageIds } },
+      select: { id: true }
+    });
+    const monthlyPlanIds = monthlyPlans.map(mp => mp.id);
+
+    // 3. Get payments for this client
+    const payments = await prisma.payment.findMany({
+      where: { clientId },
+      select: { id: true }
+    });
+    const paymentIds = payments.map(p => p.id);
+
+    // Clean up relation references safely inside a transaction block
+    await prisma.$transaction([
+      // Delete Content Items
+      prisma.contentItem.deleteMany({
+        where: { planId: { in: monthlyPlanIds } }
+      }),
+      // Delete Monthly Plans
+      prisma.monthlyPlan.deleteMany({
+        where: { packageId: { in: packageIds } }
+      }),
+      // Delete Packages
+      prisma.package.deleteMany({
+        where: { clientId }
+      }),
+      // Delete Tasks
+      prisma.task.deleteMany({
+        where: { clientId }
+      }),
+      // Delete Projects
+      prisma.project.deleteMany({
+        where: { clientId }
+      }),
+      // Delete Invoices
+      prisma.invoice.deleteMany({
+        where: { paymentId: { in: paymentIds } }
+      }),
+      // Delete Payments
+      prisma.payment.deleteMany({
+        where: { clientId }
+      }),
+      // Delete Client
+      prisma.client.delete({
+        where: { id: clientId }
+      })
+    ]);
+
+    revalidatePath("/clients");
+    revalidatePath("/content");
+    revalidatePath("/payments");
+    revalidatePath("/");
+  } catch (error: any) {
+    console.error("Failed to delete client:", error);
+    return { error: error.message || "Failed to delete client" };
+  }
+
+  redirect("/clients");
+}
